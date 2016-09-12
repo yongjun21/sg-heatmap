@@ -1,0 +1,38 @@
+# Metadata for Master Plan 2014 Subzone Boundary (No Sea)
+---
+Identifier: 'c3d13834-c25b-4efd-b4d7-a6d09f8bd74f'
+Name: 'master-plan-2014-subzone-boundary-no-sea'
+Title: 'Master Plan 2014 Subzone Boundary (No Sea)'
+Description:
+  - 'Indicative polygon of subzone boundary.'
+  - ''
+  - 'To facilitate urban planning, the Urban Redevelopment Authority (URA) divides
+    Singapore into regions, planning areas and subzones.'
+  - ''
+  - 'The Planning Regions are divided into smaller Planning Areas. Each Planning Area
+    is further divided into smaller subzones which are usually centred around a focal
+    point such as neighbourhood centre or activity node.'
+  - ''
+  - 'The Master Plan 2014 is a forward looking guiding plan for Singapore''''s development
+    in the medium term over the next 10 to 15 years and the planning boundaries may
+    not coincide with existing developments for some areas.'
+Topics:
+  - 'Infrastructure'
+Keywords:
+  - 'MP14'
+  - 'MP2014'
+  - 'Master Plan 2014 Planning Boundary'
+  - 'Subzone Boundary'
+Publisher:
+  Name: 'Urban Redevelopment Authority'
+Sources:
+  - 'Urban Redevelopment Authority'
+License: 'https://data.gov.sg/terms'
+Frequency: 'Ad-hoc'
+Last Updated: '2016-05-23T03:50:44.542754'
+Resources:
+  Identifier: '6cc7a460-2ef0-4682-883d-e8de57eeb55d'
+  Title: 'Master Plan 2014 Subzone Boundary (No Sea) (KML)'
+  Url: 'https://geo.data.gov.sg/mp14-subzone-no-sea-pl/2016/05/11/kml/mp14-subzone-no-sea-pl.zip'
+  Format: 'KML'
+  Last Updated: '2016-05-10T16:00:00'

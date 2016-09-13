@@ -1,6 +1,6 @@
 {
   "name": "sg-heatmap",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Open source heatmap generator for the Singapore data enthusiast",
   "main": "dist/index.js",
   "scripts": {
@@ -26,7 +26,6 @@
   "homepage": "https://github.com/yongjun21/sg-heatmap#readme",
   "dependencies": {
     "chroma-js": "^1.2.1",
-    "joi": "^9.0.4",
     "lodash": "^4.15.0",
     "polyline": "^0.2.0",
     "proj4": "^2.3.15"

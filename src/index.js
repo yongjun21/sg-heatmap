@@ -1,5 +1,4 @@
 /* global google */
-import Joi from 'joi'
 import minBy from 'lodash/minBy'
 import maxBy from 'lodash/maxBy'
 import cloneDeep from 'lodash/cloneDeep'
@@ -7,13 +6,8 @@ import isEqual from 'lodash/isEqual'
 import partition from 'lodash/partition'
 import {encodePolyline, decodePolyline, inside} from './helpers/geometry'
 
-const JoiLatLng = Joi.array().length(2).items(Joi.number())
-const JoiPolyline = Joi.alternatives().try(Joi.array().items(JoiLatLng), Joi.string())
-
 export default class SgHeatmap {
   constructor (mapRegions) {
-    Joi.assert(mapRegions, Joi.array().unique((a, b) => a.key === b.key),
-      'Expect array of objects with no duplicate "key"s')
     this.children = mapRegions.map(r => new MapRegion(r))
     this._defaultState = {}
     this._updaters = []
@@ -21,7 +15,6 @@ export default class SgHeatmap {
   }
 
   setDefaultState (_key, value) {
-    Joi.assert(_key, Joi.string())
     this._defaultState[_key] = value
     this.children.forEach(c => {
       if (_key in c.state) return
@@ -38,7 +31,6 @@ export default class SgHeatmap {
   }
 
   registerUpdater (fn) {
-    Joi.assert(fn, Joi.func().minArity(2))
     this._updaters.push(fn)
     return this
   }
@@ -51,8 +43,6 @@ export default class SgHeatmap {
   }
 
   registerStat (key, fn) {
-    Joi.assert(key, Joi.string())
-    Joi.assert(fn, Joi.func().minArity(1))
     this._stats[key] = fn
     return this
   }
@@ -69,7 +59,6 @@ export default class SgHeatmap {
   }
 
   update (latlng, weight) {
-    Joi.assert(weight, Joi.number())
     this.bin(latlng).forEach(c => {
       c.state = this._updaters.reduce((nextState, fn) => {
         return Object.assign(nextState, fn(weight, c.state))
@@ -96,32 +85,34 @@ export default class SgHeatmap {
     }
   }
 
-  render (stat, colorScale, defaultStyle = {}, addonStyle = {}) {
+  initializeRenderer (defaultStyle = {}, addonStyle = {}) {
     if (!google) throw new Error('Google Maps not loaded')
-    Joi.assert(stat, Joi.string().valid(Object.keys(this._stats)))
-    Joi.assert(colorScale, Joi.func().minArity(1))
-    Joi.assert(defaultStyle, Joi.object())
 
-    if (!this.mapData) {
-      this.mapData = new google.maps.Data({
-        style: feature => {
-          const styleOptions = Object.assign({}, defaultStyle)
-          const color = feature.getProperty('color')
-          if (color) Object.assign(styleOptions, addonStyle, {fillColor: color})
-          return styleOptions
+    this.mapData = new google.maps.Data({
+      style: feature => {
+        const styleOptions = Object.assign({}, defaultStyle)
+        const color = feature.getProperty('color')
+        if (color) Object.assign(styleOptions, addonStyle, {fillColor: color})
+        return styleOptions
+      }
+    })
+    this.children.forEach(c => {
+      this.mapData.add({
+        id: c.key,
+        geometry: c.getPolygon(),
+        properties: {
+          color: null,
+          meta: c.meta,
+          center: c.center
         }
       })
-      this.children.forEach(c => {
-        this.mapData.add({
-          id: c.key,
-          geometry: c.getPolygon(),
-          properties: {
-            color: null,
-            meta: c.meta
-          }
-        })
-      })
-    }
+    })
+
+    return this.mapData
+  }
+
+  render (stat, colorScale) {
+    if (!this.mapData) throw new Error('Renderer has not been initialized')
 
     const {values: statValues, unchanged} = this.getStat(stat)
     Object.keys(statValues).forEach(key => {
@@ -131,12 +122,9 @@ export default class SgHeatmap {
     unchanged.forEach(key => {
       this.mapData.getFeatureById(key).setProperty('color', null)
     })
-
-    return this.mapData
   }
 
   clone (includeState = false) {
-    Joi.assert(includeState, Joi.boolean())
     const cloned = new SgHeatmap(this.children)
     cloned._updaters = [...this._updaters]
     cloned._stats = {...this._stats}
@@ -159,26 +147,11 @@ export class MapRegion {
   constructor (data) {
     const _data = typeof data === 'string' ? JSON.parse(data) : data
 
-    Joi.assert(_data, Joi.object().keys({
-      key: Joi.string().required(),
-      meta: Joi.object(),
-      center: JoiLatLng,
-      boundary: Joi.array().items(Joi.object().keys({
-        outer: JoiPolyline.required(),
-        inners: Joi.array(JoiPolyline),
-        bounds: Joi.object().keys({
-          sw: JoiLatLng.required(),
-          ne: JoiLatLng.required()
-        })
-      })).required(),
-      state: Joi.object()
-    }).unknown())
+    this.key = _data.key
+    this.meta = cloneDeep(_data.meta)
+    this.center = cloneDeep(_data.center)
 
-    this.key = data.key
-    this.meta = cloneDeep(data.meta)
-    this.center = cloneDeep(data.center)
-
-    this.boundary = data.boundary.map(b => {
+    this.boundary = _data.boundary.map(b => {
       const boundary = {}
       boundary.outer = (typeof b.outer === 'string')
         ? decodePolyline(b.outer) : cloneDeep(b.outer)
@@ -198,11 +171,10 @@ export class MapRegion {
       return boundary
     })
 
-    this.state = data.state ? cloneDeep(data.state) : {}
+    this.state = _data.state ? cloneDeep(_data.state) : {}
   }
 
   inside (latlng) {
-    Joi.assert(latlng, JoiLatLng)
     const [lat, lng] = latlng
     if (this.boundary.every(b => (
       (lat < b.bounds.sw[0]) ||

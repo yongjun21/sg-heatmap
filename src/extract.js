@@ -20,7 +20,7 @@ Object.keys(kmls).forEach(layer => {
     let parsed = result.kml.Document.Folder.Placemark
     fs.writeFileSync(`data/semi/${layer}_raw.json`, JSON.stringify(parsed))
     const cleaned = parsed.map(area => {
-      let meta = area.description.replace(/\r\r\n/g, '')
+      let meta = area.description.replace(/\r?\n|\r/g, '')
       meta = htmlParser(meta)
         .child[0].child
         .find(({node, tag}) => node === 'element' && tag === 'body').child

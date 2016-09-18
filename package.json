@@ -1,7 +1,7 @@
 {
   "name": "sg-heatmap",
-  "version": "1.0.2",
-  "description": "Open source heatmap generator for the Singapore data enthusiast",
+  "version": "1.0.3",
+  "description": "Open-source all-in-one Swiss Army knife tool for creating Choropleth maps",
   "main": "dist/index.js",
   "scripts": {
     "build": "rm -rf dist && mkdir dist && babel src --out-dir dist",

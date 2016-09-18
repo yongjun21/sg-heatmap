@@ -1,6 +1,6 @@
 import chroma from 'chroma-js'
 
-export function colorScale (colorArray, options = {}) {
+export default function colorScale (colorArray, options = {}) {
   Object.assign({
     domain: [0, 1],
     transform: 1,

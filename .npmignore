@@ -1,5 +1,7 @@
 src/
 test/
+static/
 data/raw
 data/semi
 dist/extract.js
+*.log

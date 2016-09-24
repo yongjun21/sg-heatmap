@@ -4,7 +4,7 @@ Open-source all-in-one Swiss Army knife tool for creating Choropleth maps
 
 ![Sample](static/sample.png)
 
-### Motivation
+## Motivation
 
 How do you generate a Choropleth map?
 
@@ -35,7 +35,7 @@ Received a new set of data points? Repeat Step 3 to Step 6
 
 Clearly generating a Choropleth is not an easy task. Our goal is to provide a simple yet highly customizable JavaScript tool for data enthusiast to spend less time engineering and more time building beautiful visualizations.
 
-### A basic example
+## A basic example
 ```javascript
 import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
 import {register_MEAN} from 'sg-heatmap/dist/helpers'
@@ -44,7 +44,7 @@ import {Spectral} from 'sg-heatmap/dist/helpers/color'
 import dataPoints from './dataPoints.json'
 
 // initialize heatmap
-var heatmap = new SgHeatmap()
+var heatmap = new SgHeatmap( )
 
 // set up heatmap to use MEAN for aggregating
 register_MEAN(heatmap)
@@ -76,7 +76,7 @@ renderer.setMap(googleMap)
 heatmap.render('mean', colorScale)
 ```
 
-### Binning by key / Working with pre-aggregated data
+## Binning by key / Working with pre-aggregated data
 Sometimes we might be working with pre-aggregated data.
 Instead of binning and updating with the location (latlng),
 you want to bin directly to each polygon using keys.
@@ -133,21 +133,21 @@ Object.keys(stat.values).forEach(key => {
 heatmap.render('latest', colorScale)
 ```
 
-### API Documentation
+## API Documentation
 
-##### Installing
+#### Installing
 ```
 npm install --save sg-heatmap
 ```
 
-##### Importing to project
+#### Importing to project
 ```javascript
 import SgHeatmap from 'sg-heatmap'
 // OR in ES5
 var SgHeatmap = require('sg-heatmap')
 ```
 
-##### Using predefined maps with polygon data loaded
+#### Using predefined maps with polygon data loaded
 ```javascript
 import SgHeatmap from 'sg-heatmap/dist/predefined/URA_region'
 // OR
@@ -159,14 +159,14 @@ import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
 var heatmap = new SgHeatmap()
 ```
 
-##### Defining map with your own polygon data
+#### Defining map with your own polygon data
 ```javascript
 import polygons from './polygons.json'
 
 var heatmap = new SgHeatmap(polygons)
 ```
 
-##### *polygon* object expected data type
+#### *polygon* object expected data type
 ```javascript
 // latlng object is a two members array
 // first element is latitude, second element is longitude
@@ -179,7 +179,6 @@ var polyline = [latlng]
 // shape object is used for specifying the polygon's shape and limits
 // only outer is used to determine whether a point falls inside polygon boundary
 // inners are used for rendering purpose only
-// for detail explanation refer to #inside function
 var shape = {
   outer: polyline, // required
   inners: [polyline] // optional
@@ -198,7 +197,7 @@ var polygon = {
 // user should still wrap shape in an array
 ```
 
-##### Defining the aggregating function
+#### Defining the aggregating function
 ```javascript
 import {register_MEAN} from 'sg-heatmap/dist/helpers'
 
@@ -206,7 +205,7 @@ import {register_MEAN} from 'sg-heatmap/dist/helpers'
 register_MEAN(heatmap)
 ```
 
-##### List of predefined aggregating function
+#### List of predefined aggregating function
 - register_HISTORY
 - register_LATEST
 - register_COUNT
@@ -224,7 +223,7 @@ register_MEAN(heatmap)
 
 *register_LATEST* replaces old value with each update and keeps only the latest data point
 
-##### *.update()* method
+#### *.update( )* method
 ```javascript
 import dataPoints from './dataPoints.json'
 
@@ -242,10 +241,7 @@ dataPoints.slice(2).forEach(pt => {
 })
 ```
 
-This design supports streaming data.
-Each time *.update()* is called,
-binning and aggregating is performed on the single data point.
-Therefore *.getStat()* and *.render()* can be called even without all data points loaded
+This design supports streaming data. Each time *.update( )* is called, binning and aggregating is performed on the single data point. Therefore *.getStat( )* and *.render( )* can be called even without all data points loaded
 
 ```javascript
 // eg.
@@ -276,7 +272,7 @@ heatmap.bin([pt.lat, pt.lng])
 var matchingKeys = heatmap.bin([pt.lat, pt.lng]).map(child => child.key)
 ```
 
-##### *.getStat()* method
+#### *.getStat( )* method
 ```javascript
 // returns
 var stat = getStat('mean') = {
@@ -288,8 +284,7 @@ var stat = getStat('mean') = {
 }
 ```
 
-Each data point only needs to be passed in once and
-any number of statistics can be called on the SgHeatmap Object
+Each data point only needs to be passed in once and any number of statistics can be called on the SgHeatmap Object
 
 ```javascript
 // eg.
@@ -308,7 +303,7 @@ heatmap.getStat('max') // return MAX
 heatmap.getStat('min') // return MIN
 ```
 
-##### *.render()* method
+#### *.render( )* method
 ```javascript
 // initialize renderer
 heatmap.initializeRenderer(defaultStyle, addonStyle)
@@ -324,8 +319,8 @@ heatmap.render(key, colorScale) // key is the name of the statistic to render
 - do not set 'fillColor' in *addonStyle* as it will be overridden by the fillColor *colorScale* specify
 - refer to next section for detail on the *colorScale* object
 
-##### *colorScale* function
-- *.render()* method requires a colorScale function to be passed in as its second parameter.
+#### *colorScale* function
+- *.render( )* method requires a colorScale function to be passed in as its second parameter.
 - *colorScale* is any function that maps numeric values to CSS colors
 ```javascript
 // example
@@ -333,7 +328,7 @@ colorScale(5) // returns 'orange'
 colorScale(10) // returns '#ff0000'
 ```
 
-##### Using predefined colorScale
+#### Using predefined colorScale
 ```javascript
 import {Spectral} from 'sg-heatmap/dist/helpers/color'
 
@@ -360,11 +355,11 @@ var colorScale = Spectral([stat.min, stat.max], 0.5)
 var colorScale = Spectral([stat.min, stat.max], 2)
 ```
 
-##### List of predefined colorScale
+#### List of predefined colorScale
 - eg. Spectral, YlOrRd, Purples
 - Refer to [COLORBREWER 2.0](http://colorbrewer2.org/) for the full set of color schemes available
 
-##### Using colorScale helper function to generate customized colorScale
+#### Using colorScale helper function to generate customized colorScale
 ```javascript
 import generateColorScale from 'sg-heatmap/dist/helpers/color'
 
@@ -382,3 +377,199 @@ var customColorScale = generateColorScale(colorArray, colorScaleOptions)
 ```
 
 Refer to [chroma.js](https://gka.github.io/chroma.js/) docs for detail explanation of the different colorScaleOptions
+
+## Advance Topics
+
+#### Adding Event Handlers
+```javascript
+// eg.
+var defaultStyle = {
+  strokeOpacity: 0,
+  fillOpacity: 0
+}
+var addonStyle = {
+  strokeOpacity: 1,
+  fillOpacity: 0.7
+}
+// by setting opacity 0, empty areas will be hidden
+
+var renderer = heatmap.initializeRenderer(defaultStyle, addonStyle)
+renderer.addListener('click', event => {
+  var center = event.feature.getProperty('center')
+  var meta = event.feature.getProperty('meta')
+  var Subzone_Name = meta.Subzone_Name
+  console.log(center, Subzone_Name)
+})
+// any meta data passed into the polygons data
+// will be injected into the properties of the feature object
+```
+
+Refer to
+[https://developers.google.com/maps/documentation/javascript/3.exp/reference#Data.Feature](https://developers.google.com/maps/documentation/javascript/3.exp/reference#Data.Feature)
+for details on the methods available on the *feature* object
+
+```javascript
+// you can even do this
+// creates a highlight effect on hover
+renderer.addListener('mouseover', event => {
+  renderer.overrideStyle(event.feature, {fillOpacity: 0.5})
+})
+renderer.addListener('mouseout', event => {
+  renderer.revertStyle(event.feature)
+})
+```
+
+Refer to
+[https://developers.google.com/maps/documentation/javascript/3.exp/reference#Data](https://developers.google.com/maps/documentation/javascript/3.exp/reference#Data)
+for a detailed list of methods on the *renderer* object
+
+#### Custom aggregate functions
+When *.update( )* is called binning and aggregation is performed simultaneously. How does this work? How does the *SgHeatmap* object aggregate before being exposed to the full dataset.
+
+*SgHeatmap* does this by using a reducer approach in aggregation. Those who has worked with *Redux.js* will be familiar with this approach.
+
+Each child of the *SgHeatmap* object (corresponding to one polygon or map region) has a *state* object
+
+```javascript
+import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
+
+var heatmap = new SgHeatmap()
+
+console.log(heatmap.children[0].state)
+// prints empty object {}
+```
+
+To enable aggregation, first you need to define a default state on all the children by calling *.setDefaultState( )*.
+
+```javascript
+heatmap.setDefaultState({_count: 0, _sum: 0})
+console.log(heatmap.children[0].state)
+// prints {_count: 0, _sum: 0}
+```
+
+Then you register some updater functions by calling *.registerUpdater( )*. These *updaters* are reducer functions that requires two parameters *newValue* and *oldState* and returns a *newState* by performing some some update operations.
+
+```javascript
+// eg.
+function countUpdater (newValue, oldState) {
+  return {_count: oldState._count + 1}
+}
+function sumUpdater (newValue, oldState) {
+  return {_sum: oldState._sum + newValue}
+}
+heatmap.registerUpdater(countUpdater)
+heatmap.registerUpdater(sumUpdater)
+heatmap.inspectUpdaters()
+// prints a stringified version countUpdater and sumUpdater
+```
+
+The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in one argument *state* and returns a numeric statistic *value*. Only *stat* that has been registered are available to be called by the *.getStat( )* method.
+
+```javascript
+// eg.
+function computeMean (state) {
+  return state._sum / state._count
+}
+heatmap.registerStat('mean', computeMean)
+heatmap.inspectStats()
+// prints a stringified version of computeMean
+```
+
+To reset a heatmap and empty all it's data you can call *.resetState( )* and all the children's *state* will be reverted to the *defaultState*.
+
+```javascript
+heatmap.resetState()
+console.log(heatmap.children[0].state)
+// prints {_count: 0, _sum: 0}
+```
+
+If all these looks too complicated to you, just use one of the predefined aggregate functions. It should do everything for you. The predefined aggregate functions provided are more than enough for most use cases.
+
+```javascript
+import {register_MEAN} from 'sg-heatmap/dist/helpers'
+
+register_MEAN(heatmap)
+```
+
+Another alternative (for those who have problems wrapping their head around to writing reducer functions) is to just use a *history* updater and rely solely on the *stat* function for aggregating.
+
+```javascript
+// eg.
+import {register_HISTORY} from 'sg-heatmap/dist/helpers'
+
+register_HISTORY(heatmap)
+
+function computeMean (state) {
+  var sum = state._history.reduce((s, v) => s + v, 0)
+  var count = state._history.length
+  return sum / count
+}
+
+registerStat('mean', computeMean)
+```
+
+The reducer design has a few advantages:
+1. *SgHeatmap* object holds only the data needed for rendering the choropleth map instead of the entire dataset. If state needs to be passed around, you'll have a much smaller footprint.
+2. Supports streaming data. You can do interesting things like say 'moving average'
+
+```javascript
+// eg. implementing moving average
+heatmap.setDefaultState({_history: []})
+
+function historyUpdater (newValue, oldState) {
+  // clone history into new array
+  var _history = [...state._history] // ES6 syntax
+  if (_history.length === 10) {
+    _history.shift( )
+  }
+  _history.push(newValue)
+  return {_history: _history}
+}
+
+heatmap.registerUpdater(historyUpdater)
+
+function computeMean (state) {
+  var sum = state._history.reduce((s, v) => s + v, 0)
+  var count = state._history.length
+  return sum / count
+}
+
+registerStat('movingAverage', computeMean)
+```
+
+#### Cloning *SgHeatmap* object
+```javascript
+import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
+
+var oldHeatmap = new SgHeatmap()
+
+// Method 1 (Preferred)
+var newHeatmap = oldHeatmap.clone(true)
+// setting option false will clone only polygon data
+// but not state object
+
+// Method 2
+var newHeatmap = new SgHeatmap(oldHeatmap)
+// this is also allowed but state object will always be copied
+
+// Method 3 (for sending data between server and client)
+var serializedData = oldHeatmap.serialize(true)
+var newHeatmap = new SgHeatmap(JSON.stringify(serializedData))
+// as before, setting option false will clone only polygon data
+```
+
+Cloned *SgHeatmap* can retain original *state* of all its children but *updaters* and *stats* will still have to be re-registered
+
+```javascript
+import {register_MEAN} from 'sg-heatmap/dist/helpers'
+
+register_MEAN(oldHeatmap)
+
+var newHeatmap = oldHeatmap.clone(true)
+newHeatmap.inspectUpdaters( ) // prints []
+newHeatmap.inspectStats( ) // prints {}
+newHeatmap.getStat('mean') // throws Error
+
+// complete clone by
+register_MEAN(newHeatmap)
+```

@@ -1,8 +1,8 @@
-/* eslint-disable camelcase */
 import sortBy from 'lodash/sortBy'
 
 // UPDATERS
 
+/* eslint-disable camelcase */
 export function updater_HISTORY (newValue, state) {
   return {_history: state._history.concat([newValue])}
 }
@@ -161,16 +161,15 @@ export function register_MEDIAN (heatmap) {
     .registerUpdater(updater_HISTORY)
     .registerStat('median', stat_MEDIAN)
 }
+/* eslint-enable camelcase */
 
 // INSIDE overrides
 
 export function insideByKey (heatmap) {
   function inside (keys) {
-    return keys.indexOf(this.key) >= 0
+    return keys.indexOf(this.id) >= 0
   }
   heatmap.bin = function (keys) {
     return heatmap.children.filter(c => inside.call(c, keys))
   }
 }
-
-/* eslint-enable camelcase */

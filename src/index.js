@@ -1,14 +1,15 @@
-/* global google */
 import minBy from 'lodash/minBy'
 import maxBy from 'lodash/maxBy'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import partition from 'lodash/partition'
-import {encodePolyline, decodePolyline, inside} from './helpers/geometry'
+import {encodePolyline, inside, toLinearRing} from './helpers/geometry'
 
 export default class SgHeatmap {
-  constructor (mapRegions) {
-    this.children = mapRegions.map(r => new MapRegion(r))
+  constructor (data) {
+    const _data = typeof data === 'string' ? JSON.parse(data) : data
+    if (!(_data instanceof Array)) throw new Error('Expects an array of feature objects')
+    this.children = _data.map(f => new Feature(f))
     this._defaultState = {}
     this._updaters = []
     this._stats = {}
@@ -54,12 +55,12 @@ export default class SgHeatmap {
     })
   }
 
-  bin (latlng) {
-    return this.children.filter(c => c.inside(latlng))
+  bin (lnglat) {
+    return this.children.filter(c => c.inside(lnglat))
   }
 
-  update (latlng, weight) {
-    this.bin(latlng).forEach(c => {
+  update (lnglat, weight) {
+    this.bin(lnglat).forEach(c => {
       c.state = this._updaters.reduce((nextState, fn) => {
         return Object.assign(nextState, fn(weight, c.state))
       }, {})
@@ -74,21 +75,26 @@ export default class SgHeatmap {
     const values = changed.reduce((stats, c) => {
       const value = this._stats[stat](c.state)
       listedValues.push(value)
-      return Object.assign(stats, {[c.key]: value})
+      return Object.assign(stats, {[c.id]: value})
     }, {})
     return {
       stat,
       values,
-      unchanged: unchanged.map(c => c.key),
+      unchanged: unchanged.map(c => c.id),
       min: minBy(listedValues),
       max: maxBy(listedValues)
     }
   }
 
   initializeRenderer (defaultStyle = {}, addonStyle = {}) {
-    if (!google) throw new Error('Google Maps not loaded')
+    if (!window) throw new Error('Method initializeRenderer should only be called browser-side')
+    if (!window.google) throw new Error('Google Maps not loaded')
+    if ('renderer' in this) {
+      console.log('Existing renderer replaced')
+      this.renderer.setMap(null)
+    }
 
-    this.mapData = new google.maps.Data({
+    this.renderer = new window.google.maps.Data({
       style: feature => {
         const styleOptions = Object.assign({}, defaultStyle)
         const color = feature.getProperty('color')
@@ -97,30 +103,27 @@ export default class SgHeatmap {
       }
     })
     this.children.forEach(c => {
-      this.mapData.add({
-        id: c.key,
-        geometry: c.getPolygon(),
-        properties: {
-          color: null,
-          meta: c.meta,
-          center: c.center
-        }
+      this.renderer.addGeoJson({
+        id: c.id,
+        type: 'Feature',
+        geometry: c.geometry,
+        properties: Object.assign({color: null}, c.properties)
       })
     })
 
-    return this.mapData
+    return this.renderer
   }
 
   render (stat, colorScale) {
-    if (!this.mapData) throw new Error('Renderer has not been initialized')
+    if (!this.renderer) throw new Error('Renderer has not been initialized')
 
     const {values: statValues, unchanged} = this.getStat(stat)
     Object.keys(statValues).forEach(key => {
       const color = colorScale(statValues[key])
-      this.mapData.getFeatureById(key).setProperty('color', color)
+      this.renderer.getFeatureById(key).setProperty('color', color)
     })
     unchanged.forEach(key => {
-      this.mapData.getFeatureById(key).setProperty('color', null)
+      this.renderer.getFeatureById(key).setProperty('color', null)
     })
   }
 
@@ -143,73 +146,75 @@ export default class SgHeatmap {
   }
 }
 
-export class MapRegion {
+export class Feature {
   constructor (data) {
-    const _data = typeof data === 'string' ? JSON.parse(data) : data
+    if (!('id' in data)) throw new Error('Feature object requires id')
+    if (!('geometry' in data)) throw new Error('Geometry not specified in feature object')
+    this.id = data.id
+    this.properties = data.properties ? cloneDeep(data.properties) : {}
 
-    this.key = _data.key
-    this.meta = cloneDeep(_data.meta)
-    this.center = cloneDeep(_data.center)
-
-    this.boundary = _data.boundary.map(b => {
-      const boundary = {}
-      boundary.outer = (typeof b.outer === 'string')
-        ? decodePolyline(b.outer) : cloneDeep(b.outer)
-      boundary.inners = b.inners && b.inners.map(inner => (
-        (typeof inner === 'string') ? decodePolyline(inner) : cloneDeep(inner)
-      ))
-      boundary.bounds = b.bounds ? cloneDeep(b.bounds) : {
-        sw: [
-          minBy(boundary.outer, (v) => v[0])[0],
-          minBy(boundary.outer, (v) => v[1])[1]
-        ],
-        ne: [
-          maxBy(boundary.outer, (v) => v[0])[0],
-          maxBy(boundary.outer, (v) => v[1])[1]
+    this.geometry = {}
+    this.geometry.type = data.geometry.type
+    if (this.geometry.type === 'Polygon') {
+      this.geometry.coordinates = data.geometry.coordinates.map(toLinearRing)
+      this.geometry.bbox = ('bbox' in data.geometry) ? cloneDeep(data.geometry.bbox) : [
+        minBy(this.geometry.coordinates[0], (v) => v[0])[0],
+        minBy(this.geometry.coordinates[0], (v) => v[1])[1],
+        maxBy(this.geometry.coordinates[0], (v) => v[0])[0],
+        maxBy(this.geometry.coordinates[0], (v) => v[1])[1]
+      ]
+    } else if (this.geometry.type === 'MultiPolygon') {
+      this.geometry.coordinates = data.geometry.coordinates
+        .map(polygon => polygon.map(toLinearRing))
+      if ('bbox' in data.geometry) {
+        this.geometry.bbox = cloneDeep(data.geometry.bbox)
+      } else {
+        const bboxs = this.geometry.coordinates.map(polygon => ([
+          minBy(polygon[0], (v) => v[0])[0],
+          minBy(polygon[0], (v) => v[1])[1],
+          maxBy(polygon[0], (v) => v[0])[0],
+          maxBy(polygon[0], (v) => v[1])[1]
+        ]))
+        this.geometry.bbox = [
+          minBy(bboxs, (v) => v[0])[0],
+          minBy(bboxs, (v) => v[1])[1],
+          maxBy(bboxs, (v) => v[2])[2],
+          maxBy(bboxs, (v) => v[3])[3]
         ]
       }
-      return boundary
-    })
+    } else {
+      throw new Error('Feature geometry must be of type Polygon or MultiPolygon')
+    }
 
-    this.state = _data.state ? cloneDeep(_data.state) : {}
+    this.state = ('state' in data) ? cloneDeep(data.state) : {}
   }
 
-  inside (latlng) {
-    const [lat, lng] = latlng
-    if (this.boundary.every(b => (
-      (lat < b.bounds.sw[0]) ||
-      (lat > b.bounds.ne[0]) ||
-      (lng < b.bounds.sw[1]) ||
-      (lng > b.bounds.ne[1])
-    ))) return false
-    return this.boundary.some(b => inside([lat, lng], b.outer))
-  }
+  inside (location) {
+    const [lng, lat] = location
 
-  getPolygon () {
-    if (this.polygon) return this.polygon
-    this.polygon = new google.maps.Data.MultiPolygon(this.boundary.map(b => {
-      const polygon = []
-      polygon.push(b.outer.map(latlng => new google.maps.LatLng(...latlng)))
-      if (b.inners) {
-        b.inners.forEach(inner => {
-          polygon.push(inner.map(latlng => new google.maps.LatLng(...latlng)))
-        })
-      }
-      return polygon
-    }))
-    return this.polygon
+    if (lng < this.geometry.bbox[0]) return false
+    if (lat < this.geometry.bbox[1]) return false
+    if (lng > this.geometry.bbox[2]) return false
+    if (lat > this.geometry.bbox[3]) return false
+
+    if (this.geometry.type === 'Polygon') {
+      return inside([lng, lat], this.geometry.coordinates[0])
+    } else {
+      return this.geometry.coordinates
+        .some(polygon => inside([lng, lat], polygon[0]))
+    }
   }
 
   serialize (includeState = false) {
-    let {key, meta, center, boundary, state} = this
-    boundary = boundary.map(b => {
-      const _boundary = {}
-      _boundary.outer = encodePolyline(b.outer)
-      _boundary.inners = b.inners && b.inners.map(encodePolyline)
-      _boundary.bounds = b.bounds
-      return _boundary
-    })
-    if (!includeState) state = {}
-    return JSON.stringify({key, meta, center, boundary, state})
+    const {id, properties, geometry, state} = this
+    const _geometry = {
+      type: geometry.type,
+      bbox: geometry.bbox,
+      coordinates: geometry.type === 'Polygon'
+        ? geometry.coordinates.map(encodePolyline)
+        : geometry.coordinates.map(polygon => polygon.map(encodePolyline))
+    }
+    const _state = includeState ? state : {}
+    return JSON.stringify({id, properties, _geometry, _state})
   }
 }

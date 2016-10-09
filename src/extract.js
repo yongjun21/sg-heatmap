@@ -1,3 +1,8 @@
+//
+// Deprecated
+// Switched to using GeoJSON
+//
+
 import fs from 'fs'
 import xml2js from 'xml2js'
 import {html2json as htmlParser} from 'html2json'

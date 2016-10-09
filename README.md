@@ -52,7 +52,7 @@ register_MEAN(heatmap)
 // pass in the data points
 // binning and aggregating is done in one step
 dataPoints.forEach(pt => {
-  heatmap.update([pt.lat, pt.lng], pt.wt)
+  heatmap.update([pt.lng, pt.lat], pt.wt)
 })
 
 // retrieve aggregated values
@@ -78,7 +78,7 @@ heatmap.render('mean', colorScale)
 
 ## Binning by key / Working with pre-aggregated data
 Sometimes we might be working with pre-aggregated data.
-Instead of binning and updating with the location (latlng),
+Instead of binning and updating with the location (lnglat),
 you want to bin directly to each polygon using keys.
 In this case we provides a helper function to modify your *SgHeatmap* object
 
@@ -106,7 +106,7 @@ var heatmap = new SgHeatmap()
 register_MEAN(heatmap)
 
 dataPoints.forEach(pt => {
-  heatmap.update([pt.lat, pt.lng], pt.wt)
+  heatmap.update([pt.lng, pt.lat], pt.wt)
 })
 
 var stat = heatmap.getStat('mean')
@@ -131,6 +131,43 @@ Object.keys(stat.values).forEach(key => {
 
 // call render on stat 'latest'
 heatmap.render('latest', colorScale)
+```
+
+## NEW Plugin to support LeafletJS
+```javascript
+import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
+import supportLeaflet from 'sg-heatmap/dist/plugins/leaflet'
+import {register_MEAN} from 'sg-heatmap/dist/helpers'
+import {Spectral} from 'sg-heatmap/dist/helpers/color'
+
+import dataPoints from './dataPoints.json'
+
+var heatmap = new SgHeatmap( )
+supportLeaflet(heatmap)
+register_MEAN(heatmap)
+
+dataPoints.forEach(pt => {
+  heatmap.update([pt.lng, pt.lat], pt.wt)
+})
+
+var stat = heatmap.getStat('mean')
+var colorScale = Spectral([stat.min, stat.max])
+
+// .initializeRenderer( ) has been overridden to
+// return a Leaflet GeoJSON layer
+// refer to http://leafletjs.com/reference-1.0.0.html#geojson
+var renderer = heatmap.initializeRenderer({
+  strokeWeight: 1,
+  strokeColor: 'black',
+  strokeOpacity: 1,
+  fillColor: 'white',
+  fillOpacity: 0.7
+})
+renderer
+  .bindTooltip(layer => layer.feature.properties.Subzone_Name)
+  .addTo(leafletMap)
+
+heatmap.render('mean', colorScale)
 ```
 
 ## API Documentation
@@ -159,43 +196,59 @@ import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
 var heatmap = new SgHeatmap()
 ```
 
+Data source:
+- https://data.gov.sg/dataset/master-plan-2014-region-boundary-web
+- https://data.gov.sg/dataset/master-plan-2014-planning-area-boundary-web
+- https://data.gov.sg/dataset/master-plan-2014-subzone-boundary-web
+
 #### Defining map with your own polygon data
 ```javascript
-import polygons from './polygons.json'
+import polygonData from './polygonData.json'
 
-var heatmap = new SgHeatmap(polygons)
+var heatmap = new SgHeatmap(polygonData.features)
 ```
 
-#### *polygon* object expected data type
+#### Polygon data must takes the format of an array of GeoJSON feature objects
 ```javascript
-// latlng object is a two members array
-// first element is latitude, second element is longitude
-var Latlng = [Number, Number]
+Position: [Number, Number]
+// first element longitude
+// second element latitude
 
-// polyline object is an array of latlng
-// last element to match first element
-var polyline = [latlng]
+LinearRing: Array<Position>
+// first position to match last position
 
-// shape object is used for specifying the polygon's shape and limits
-// only outer is used to determine whether a point falls inside polygon boundary
-// inners are used for rendering purpose only
-var shape = {
-  outer: polyline, // required
-  inners: [polyline] // optional
+Polygon: {
+  type: 'Polygon',
+  coordinates: Array<LinearRing>, // required
+  // first element is outer boundary
+  // second element onward are inner "holes"
+  bbox: [Number, Number, Number, Number] // optional
+  // first element West bound, second element South bound
+  // third element East bound, fourth element North bound
 }
 
-// polygon object
-var polygon = {
-  key: String, // required, unique
-  boundary: [shape], // required, accepts only array
-  meta: String|Number|Object // optional field, accepts all data type
-  center: latlng // optional
+MultiPolygon: {
+  type: 'MultiPolygon',
+  coordinates: Array<Array<LinearRing>>,
+  bbox: [Number, Number, Number, Number]
 }
-// note the reason for making boundary property an array
-// is so polygon can include multiple shapes,
-// even if only one shape is needed
-// user should still wrap shape in an array
+
+Feature: {
+  type: 'Feature'
+  id: String, // required, must be unique
+  properties: Object, // optional, meta data in key/value form
+  geometry: Polygon | MultiPolygon // required
+}
+
+polygonData: Array<Feature>
 ```
+
+Refer to relevant sections in **IETF's 2015 GeoJSON Specification (RFC7946)**
+- [https://tools.ietf.org/html/rfc7946#section-3.2](https://tools.ietf.org/html/rfc7946#section-3.2)
+- [https://tools.ietf.org/html/rfc7946#section-3.1.6](https://tools.ietf.org/html/rfc7946#section-3.1.6)
+- [https://tools.ietf.org/html/rfc7946#section-3.1.7](https://tools.ietf.org/html/rfc7946#section-3.1.7)
+- [https://tools.ietf.org/html/rfc7946#section-3.1.1](https://tools.ietf.org/html/rfc7946#section-3.1.1)
+- [https://tools.ietf.org/html/rfc7946#section-5](https://tools.ietf.org/html/rfc7946#section-5)
 
 #### Defining the aggregating function
 ```javascript
@@ -229,15 +282,15 @@ import dataPoints from './dataPoints.json'
 
 // push one data point
 var pt = dataPoints[0]
-heatmap.update([pt.lat, pt.lng], pt.wt)
+heatmap.update([pt.lng, pt.lat], pt.wt)
 
 // push another data point
 pt = dataPoints[1]
-heatmap.update([pt.lat, pt.lng], pt.wt)
+heatmap.update([pt.lng, pt.lat], pt.wt)
 
 // push the remaining data points
 dataPoints.slice(2).forEach(pt => {
-  heatmap.update([pt.lat, pt.lng], pt.wt)
+  heatmap.update([pt.lng, pt.lat], pt.wt)
 })
 ```
 
@@ -248,28 +301,34 @@ This design supports streaming data. Each time *.update( )* is called, binning a
 heatmap.resetState()
 
 dataPoints.slice(0, 100).forEach(pt => {
-  heatmap.update([pt.lat, pt.lng], pt.wt)
+  heatmap.update([pt.lng, pt.lat], pt.wt)
 })
-heatmap.getStat('mean') // returns aggregated values for first 100 data points
+heatmap.getStat('mean')
+// returns aggregated values for first 100 data points
 
 dataPoints.slice(100, 200).forEach(pt => {
-  heatmap.update([pt.lat, pt.lng], pt.wt)
+  heatmap.update([pt.lng, pt.lat], pt.wt)
 })
-heatmap.getStat('mean') // returns aggregated values for first 200 data points
+heatmap.getStat('mean')
+// returns aggregated values for first 200 data points
 
 dataPoints.slice(200, 300).forEach(pt => {
-  heatmap.update([pt.lat, pt.lng], pt.wt)
+  heatmap.update([pt.lng, pt.lat], pt.wt)
 })
-heatmap.getStat('mean') // returns aggregated values for first 300 data points
+heatmap.getStat('mean')
+// returns aggregated values for first 300 data points
 
 
 // say you only want to check which bin data point falls into
 // i.e. bin but don't update
 pt = dataPoints[0]
-heatmap.bin([pt.lat, pt.lng])
-// this returns filtered list of heatmap.children where inside function evaluates true
+heatmap.bin([pt.lng, pt.lat])
+// this returns filtered list of heatmap.children
+// where inside function evaluates true
+
 // to get their respective key
-var matchingKeys = heatmap.bin([pt.lat, pt.lng]).map(child => child.key)
+var matchingKeys = heatmap.bin([pt.lng, pt.lat])
+  .map(child => child.key)
 ```
 
 #### *.getStat( )* method
@@ -288,14 +347,16 @@ Each data point only needs to be passed in once and any number of statistics can
 
 ```javascript
 // eg.
-import {register_MEAN, register_MAX, register_MIN} from 'sg-heatmap/dist/helpers'
+import {
+  register_MEAN, register_MAX, register_MIN
+} from 'sg-heatmap/dist/helpers'
 
 register_MEAN(heatmap)
 register_MAX(heatmap)
 register_MIN(heatmap)
 
 dataPoints.forEach(pt => {
-  heatmap.update([pt.lat, pt.lng], pt.weight)
+  heatmap.update([pt.lng, pt.lat], pt.weight)
 })
 
 heatmap.getStat('mean') // return MEAN
@@ -322,6 +383,7 @@ heatmap.render(key, colorScale) // key is the name of the statistic to render
 #### *colorScale* function
 - *.render( )* method requires a colorScale function to be passed in as its second parameter.
 - *colorScale* is any function that maps numeric values to CSS colors
+
 ```javascript
 // example
 colorScale(5) // returns 'orange'
@@ -395,13 +457,10 @@ var addonStyle = {
 
 var renderer = heatmap.initializeRenderer(defaultStyle, addonStyle)
 renderer.addListener('click', event => {
-  var center = event.feature.getProperty('center')
-  var meta = event.feature.getProperty('meta')
-  var Subzone_Name = meta.Subzone_Name
-  console.log(center, Subzone_Name)
+  var Address = event.feature.getProperty('Address')
+  var Subzone_Name = event.feature.getProperty('Subzone_Name')
+  console.log(Subzone_Name, Address)
 })
-// any meta data passed into the polygons data
-// will be injected into the properties of the feature object
 ```
 
 Refer to
@@ -422,6 +481,24 @@ renderer.addListener('mouseout', event => {
 Refer to
 [https://developers.google.com/maps/documentation/javascript/3.exp/reference#Data](https://developers.google.com/maps/documentation/javascript/3.exp/reference#Data)
 for a detailed list of methods on the *renderer* object
+
+```javascript
+// Leaflet plugin example
+var renderer = heatmap.initializeRenderer(defaultStyle, addonStyle)
+renderer.on({
+  click: event => {
+    var Address = event.layer.feature.properties.Address
+    var Subzone_Name = event.layer.feature.properties.Subzone_Name
+    console.log(Subzone_Name, Address)
+  },
+  mouseover: event => {
+    event.layer.setStyle({fillOpacity: 0.5})
+  },
+  mouseout: event => {
+    renderer.resetStyle(event.layer)
+  }
+})
+```
 
 #### Custom aggregate functions
 When *.update( )* is called binning and aggregation is performed simultaneously. How does this work? How does the *SgHeatmap* object aggregate before being exposed to the full dataset.
@@ -543,16 +620,12 @@ import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
 
 var oldHeatmap = new SgHeatmap()
 
-// Method 1 (Preferred)
+// Method 1 (cloning locally)
 var newHeatmap = oldHeatmap.clone(true)
 // setting option false will clone only polygon data
 // but not state object
 
-// Method 2
-var newHeatmap = new SgHeatmap(oldHeatmap)
-// this is also allowed but state object will always be copied
-
-// Method 3 (for sending data between server and client)
+// Method 2 (for sending data between server and client)
 var serializedData = oldHeatmap.serialize(true)
 var newHeatmap = new SgHeatmap(JSON.stringify(serializedData))
 // as before, setting option false will clone only polygon data

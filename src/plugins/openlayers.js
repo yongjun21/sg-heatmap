@@ -21,7 +21,7 @@ export default function supportOpenLayers (heatmap) {
     })
 
     const styleFunction = feature => {
-      const color = feature.getProperties().color
+      const color = feature.get('color')
       const style = [defaultStyle]
       if (color) {
         if (addonStyle) style.push(addonStyle)
@@ -52,10 +52,10 @@ export default function supportOpenLayers (heatmap) {
     const {values: statValues, unchanged} = this.getStat(stat)
     Object.keys(statValues).forEach(key => {
       const color = colorScale(statValues[key])
-      this.renderer.getSource().getFeatureById(key).setProperties({color})
+      this.renderer.getSource().getFeatureById(key).set('color', color)
     })
     unchanged.forEach(key => {
-      this.renderer.getSource().getFeatureById(key).setProperties({color: null})
+      this.renderer.getSource().getFeatureById(key).set('color', null)
     })
   }
 

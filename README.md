@@ -539,14 +539,13 @@ renderer.on({
 // OpenLayers plugin example
 var renderer = heatmap.initializeRenderer(defaultStyle, addonStyle)
 var clickHandler = new ol.interaction.Select()
-clickHandler.on('select', event => {
-  if (!event.selected.length) return
-  var feature = event.selected[0]
-  var Address = feature.properties.Address
-  var Subzone_Name = feature.properties.Subzone_Name
-  console.log(Subzone_Name, Address)
+openLayersMap.on('click', event => {
+  openLayersMap.forEachFeatureAtPixel(event.pixel, feature => {
+    var Address = feature.get('Address')
+    var Subzone_Name = feature.get('Subzone_Name')
+    console.log(Subzone_Name, Address)
+  })
 })
-openLayerMap.addInteraction(clickHandler)
 ```
 
 #### Custom aggregate functions

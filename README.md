@@ -170,6 +170,41 @@ renderer
 heatmap.render('mean', colorScale)
 ```
 
+## NEW Plugin to support OpenLayers
+```javascript
+import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
+import supportOpenLayers from 'sg-heatmap/dist/plugins/openlayers'
+import {register_MEAN} from 'sg-heatmap/dist/helpers'
+import {Spectral} from 'sg-heatmap/dist/helpers/color'
+
+import dataPoints from './dataPoints.json'
+
+var heatmap = new SgHeatmap( )
+supportOpenLayers(heatmap)
+register_MEAN(heatmap)
+
+dataPoints.forEach(pt => {
+  heatmap.update([pt.lng, pt.lat], pt.wt)
+})
+
+var stat = heatmap.getStat('mean')
+var colorScale = Spectral([stat.min, stat.max])
+
+// .initializeRenderer( ) has been overridden to
+// return an OpenLayers ol.layer.Vector object
+// refer to http://openlayers.org/en/latest/apidoc/ol.layer.Vector.html
+var renderer = heatmap.initializeRenderer({
+  strokeWeight: 1,
+  strokeColor: 'black',
+  strokeOpacity: 1,
+  fillColor: 'white',
+  fillOpacity: 0.7
+})
+openLayersMap.addLayer(renderer)
+
+heatmap.render('mean', colorScale)
+```
+
 ## API Documentation
 
 #### Installing
@@ -500,12 +535,26 @@ renderer.on({
 })
 ```
 
+```javascript
+// OpenLayers plugin example
+var renderer = heatmap.initializeRenderer(defaultStyle, addonStyle)
+var clickHandler = new ol.interaction.Select()
+clickHandler.on('select', event => {
+  if (!event.selected.length) return
+  var feature = event.selected[0]
+  var Address = feature.properties.Address
+  var Subzone_Name = feature.properties.Subzone_Name
+  console.log(Subzone_Name, Address)
+})
+openLayerMap.addInteraction(clickHandler)
+```
+
 #### Custom aggregate functions
 When *.update( )* is called binning and aggregation is performed simultaneously. How does this work? How does the *SgHeatmap* object aggregate before being exposed to the full dataset.
 
 *SgHeatmap* does this by using a reducer approach in aggregation. Those who has worked with *Redux.js* will be familiar with this approach.
 
-Each child of the *SgHeatmap* object (corresponding to one polygon or map region) has a *state* object
+Each child of the *SgHeatmap* object (corresponding to one feature) has a *state* object
 
 ```javascript
 import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'

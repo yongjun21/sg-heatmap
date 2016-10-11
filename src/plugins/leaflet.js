@@ -4,7 +4,7 @@ export default function supportLeaflet (heatmap) {
     if (!window.L) throw new Error('Leaflet not loaded')
     if ('renderer' in this) {
       console.log('Existing renderer replaced')
-      this.renderer.setMap(null)
+      this.renderer.remove()
     }
 
     this.renderer = window.L.geoJSON(null, {

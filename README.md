@@ -157,9 +157,9 @@ var colorScale = Spectral([stat.min, stat.max])
 // return a Leaflet GeoJSON layer
 // refer to http://leafletjs.com/reference-1.0.0.html#geojson
 var renderer = heatmap.initializeRenderer({
-  strokeWeight: 1,
-  strokeColor: 'black',
-  strokeOpacity: 1,
+  weight: 1,
+  color: 'black',
+  opacity: 1,
   fillColor: 'white',
   fillOpacity: 0.7
 })
@@ -190,16 +190,22 @@ dataPoints.forEach(pt => {
 var stat = heatmap.getStat('mean')
 var colorScale = Spectral([stat.min, stat.max])
 
+// defaultStyle and addonStyle need to be OpenLayers ol.style.Style object
+var defaultStyle = new ol.style.Style({
+  stroke: new ol.style.Stroke({
+    color: 'black',
+    width: 1
+  }),
+  fill: new ol.style.Fill({
+    color: 'white'
+  })
+})
+
 // .initializeRenderer( ) has been overridden to
 // return an OpenLayers ol.layer.Vector object
 // refer to http://openlayers.org/en/latest/apidoc/ol.layer.Vector.html
-var renderer = heatmap.initializeRenderer({
-  strokeWeight: 1,
-  strokeColor: 'black',
-  strokeOpacity: 1,
-  fillColor: 'white',
-  fillOpacity: 0.7
-})
+var renderer = heatmap.initializeRenderer(defaultStyle)
+renderer.setOpacity(0.7)
 openLayersMap.addLayer(renderer)
 
 heatmap.render('mean', colorScale)

@@ -215,6 +215,6 @@ export class Feature {
         : geometry.coordinates.map(polygon => polygon.map(encodePolyline))
     }
     const _state = includeState ? state : {}
-    return JSON.stringify({id, properties, _geometry, _state})
+    return JSON.stringify({id, properties, geometry: _geometry, state: _state})
   }
 }

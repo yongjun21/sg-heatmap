@@ -35,6 +35,31 @@ Received a new set of data points? Repeat Step 3 to Step 6
 
 Clearly generating a Choropleth is not an easy task. Our goal is to provide a simple yet highly customizable JavaScript tool for data enthusiast to spend less time engineering and more time building beautiful visualizations.
 
+## Content
+1. [A basic example](#a-basic-example)
+2. [Binning by key / Working with pre-aggregated data](#binning-by-key--working-with-pre-aggregated-data)
+3. [NEW Plugin to support LeafletJS](#new-plugin-to-support-leafletjs)
+4. [NEW Plugin to support OpenLayers](#new-plugin-to-support-openlayers)
+5. [API Documentation](#api-documentation)
+  - [Installing](#installing)
+  - [Importing to project](#importing-to-project)
+  - [Using predefined maps with polygon data loaded](#using-predefined-maps-with-polygon-data-loaded)
+  - [Defining map with your own polygon data](#defining-map-with-your-own-polygon-data)
+  - [Polygon data must takes the format of an array of GeoJSON feature objects](#polygon-data-must-takes-the-format-of-an-array-of-geojson-feature-objects)
+  - [Defining the aggregating function](#defining-the-aggregating-function)
+  - [List of predefined aggregating functions](##list-of-predefined-aggregating-function)
+  - [.update( ) method](#update--method)
+  - [.getStat( ) method](#getstat--method)
+  - [.render( ) method](#render--method)
+  - [colorScale function](#colorscale-function)
+  - [Using predefined colorScale](#using-predefined-colorscale)
+  - [List of predefined colorScale](#list-of-predefined-colorscale)
+  - [Using colorScale helper function to generate customized colorScale](#using-colorscale-helper-function-to-generate-customized-colorscale)
+7. [Advance Topics](#advance-topics)
+  - [Adding Event Handlers](#adding-event-handlers)
+  - [Custom aggregate functions](#custom-aggregate-functions)
+  - [Cloning SgHeatmap object](#cloning-sgheatmap-object)
+
 ## A basic example
 ```javascript
 import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
@@ -299,7 +324,7 @@ import {register_MEAN} from 'sg-heatmap/dist/helpers'
 register_MEAN(heatmap)
 ```
 
-#### List of predefined aggregating function
+#### List of predefined aggregating functions
 - register_HISTORY
 - register_LATEST
 - register_COUNT

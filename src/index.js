@@ -68,12 +68,12 @@ export default class SgHeatmap {
     return this
   }
 
-  getStat (stat) {
+  getStat (stat, payload) {
     const [changed, unchanged] = partition(this.children,
       c => !isEqual(this._defaultState, c.state))
     const listedValues = []
     const values = changed.reduce((stats, c) => {
-      const value = this._stats[stat](c.state)
+      const value = this._stats[stat](c.state, payload)
       listedValues.push(value)
       return Object.assign(stats, {[c.id]: value})
     }, {})
@@ -114,10 +114,10 @@ export default class SgHeatmap {
     return this.renderer
   }
 
-  render (stat, colorScale) {
+  render (stat, colorScale, payload) {
     if (!this.renderer) throw new Error('Renderer has not been initialized')
 
-    const {values: statValues, unchanged} = this.getStat(stat)
+    const {values: statValues, unchanged} = this.getStat(stat, payload)
     Object.keys(statValues).forEach(key => {
       const color = colorScale(statValues[key])
       this.renderer.getFeatureById(key).setProperty('color', color)

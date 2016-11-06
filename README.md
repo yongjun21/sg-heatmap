@@ -41,24 +41,24 @@ Clearly generating a Choropleth is not an easy task. Our goal is to provide a si
 3. [NEW Plugin to support LeafletJS](#new-plugin-to-support-leafletjs)
 4. [NEW Plugin to support OpenLayers](#new-plugin-to-support-openlayers)
 5. [API Documentation](#api-documentation)
-  - [Installing](#installing)
-  - [Importing to project](#importing-to-project)
-  - [Using predefined maps with polygon data loaded](#using-predefined-maps-with-polygon-data-loaded)
-  - [Defining map with your own polygon data](#defining-map-with-your-own-polygon-data)
-  - [Polygon data must takes the format of an array of GeoJSON feature objects](#polygon-data-must-takes-the-format-of-an-array-of-geojson-feature-objects)
-  - [Defining the aggregating function](#defining-the-aggregating-function)
-  - [List of predefined aggregating functions](##list-of-predefined-aggregating-function)
-  - [.update( ) method](#update--method)
-  - [.getStat( ) method](#getstat--method)
-  - [.render( ) method](#render--method)
-  - [colorScale function](#colorscale-function)
-  - [Using predefined colorScale](#using-predefined-colorscale)
-  - [List of predefined colorScale](#list-of-predefined-colorscale)
-  - [Using colorScale helper function to generate customized colorScale](#using-colorscale-helper-function-to-generate-customized-colorscale)
+    - [Installing](#installing)
+    - [Importing to project](#importing-to-project)
+    - [Using predefined maps with polygon data loaded](#using-predefined-maps-with-polygon-data-loaded)
+    - [Defining map with your own polygon data](#defining-map-with-your-own-polygon-data)
+    - [Polygon data must takes the format of an array of GeoJSON feature objects](#polygon-data-must-takes-the-format-of-an-array-of-geojson-feature-objects)
+    - [Defining the aggregating function](#defining-the-aggregating-function)
+    - [List of predefined aggregating functions](##list-of-predefined-aggregating-function)
+    - [.update( ) method](#update--method)
+    - [.getStat( ) method](#getstat--method)
+    - [.render( ) method](#render--method)
+    - [colorScale function](#colorscale-function)
+    - [Using predefined colorScale](#using-predefined-colorscale)
+    - [List of predefined colorScale](#list-of-predefined-colorscale)
+    - [Using colorScale helper function to generate customized colorScale](#using-colorscale-helper-function-to-generate-customized-colorscale)
 7. [Advance Topics](#advance-topics)
-  - [Adding Event Handlers](#adding-event-handlers)
-  - [Custom aggregate functions](#custom-aggregate-functions)
-  - [Cloning SgHeatmap object](#cloning-sgheatmap-object)
+    - [Adding Event Handlers](#adding-event-handlers)
+    - [Custom aggregate functions](#custom-aggregate-functions)
+    - [Cloning SgHeatmap object](#cloning-sgheatmap-object)
 
 ## A basic example
 ```javascript
@@ -335,6 +335,7 @@ register_MEAN(heatmap)
 - register_MIN
 - register_MAX
 - register_MEDIAN
+- register_PERCENTILE
 
 *register_HISTORY* and *register_LATEST* does not do any actual aggregating
 
@@ -430,13 +431,25 @@ heatmap.getStat('max') // return MAX
 heatmap.getStat('min') // return MIN
 ```
 
+*.getStat( )* optionally accepts a second payload argument
+
+
+```javascript
+// eg.
+import {register_PERCENTILE} from 'sg-heatmap/dist/helpers'
+
+register_PERCENTILE(heatmap)
+// pass in data
+heatmap.getStat('percentile', 0.75) // return the 75th percentile
+```
+
 #### *.render( )* method
 ```javascript
 // initialize renderer
 heatmap.initializeRenderer(defaultStyle, addonStyle)
 
 // initialize colorScale by providing domain min/max endpoints
-heatmap.render(key, colorScale) // key is the name of the statistic to render
+heatmap.render(key, colorScale, payload) // key is the name of the statistic to render
 ```
 
 - *defaultStyle* and *addonStyle* are optional style options to be applied onto map polygons
@@ -445,6 +458,7 @@ heatmap.render(key, colorScale) // key is the name of the statistic to render
 - *addonStyle* applies to those polygons that has been assigned at least one data point
 - do not set 'fillColor' in *addonStyle* as it will be overridden by the fillColor *colorScale* specify
 - refer to next section for detail on the *colorScale* object
+- if *stat* to be rendered requires a payload argument, it should be supplied as the third argument in *.render( )*
 
 #### *colorScale* function
 - *.render( )* method requires a colorScale function to be passed in as its second parameter.
@@ -619,11 +633,11 @@ heatmap.inspectUpdaters()
 // prints a stringified version countUpdater and sumUpdater
 ```
 
-The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in one argument *state* and returns a numeric statistic *value*. Only *stat* that has been registered are available to be called by the *.getStat( )* method.
+The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in two arguments *state* & *payload* (optional) and returns a numeric statistic *value*. Only *stat* that has been registered are available to be called by the *.getStat( )* method.
 
 ```javascript
 // eg.
-function computeMean (state) {
+function computeMean (state, payload) {
   return state._sum / state._count
 }
 heatmap.registerStat('mean', computeMean)

@@ -257,6 +257,8 @@ import SgHeatmap from 'sg-heatmap/dist/predefined/URA_region'
 import SgHeatmap from 'sg-heatmap/dist/predefined/URA_planning_area'
 // OR
 import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
+// OR
+import SgHeatmap from 'sg-heatmap/dist/predefined/SPF_npc'
 
 // initialize
 var heatmap = new SgHeatmap()
@@ -266,6 +268,7 @@ Data source:
 - https://data.gov.sg/dataset/master-plan-2014-region-boundary-web
 - https://data.gov.sg/dataset/master-plan-2014-planning-area-boundary-web
 - https://data.gov.sg/dataset/master-plan-2014-subzone-boundary-web
+- https://data.gov.sg/dataset/singapore-police-force-npc-boundary
 
 #### Defining map with your own polygon data
 ```javascript

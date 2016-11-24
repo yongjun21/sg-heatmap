@@ -7,7 +7,8 @@ const filenames = {
   subzone_2014: 'mp14-subzone-no-sea-pl',
   region_2008: 'mp08-region-no-sea-pl',
   planning_area_2008: 'mp08-plng-area-no-sea-pl',
-  subzone_2008: 'mp08-subzone-no-sea-pl'
+  subzone_2008: 'mp08-subzone-no-sea-pl',
+  npc: 'npc-boundary'
 }
 
 const propertiesMap = {
@@ -20,12 +21,15 @@ const propertiesMap = {
   'PLN_AREA_C': 'Planning_Area_Code',
   'REGION_N': 'Region_Name',
   'REGION_C': 'Region_Code',
+  'DIVISION': 'Division_Name',
+  'DIV': 'Division_Code',
+  'NPC_NAME': 'NPC_Name',
   'INC_CRC': 'INC_CRC',
   'FMEL_UPD_D': 'FMEL_UPD_D',
   'X_ADDR': 'X_ADDR',
   'Y_ADDR': 'Y_ADDR',
-  'SHAPE_Leng': 'SHAPE_Length',
-  'SHAPE_Area': 'SHAPE_Area'
+  'SHAPE_Leng': 'Shape_Length',
+  'SHAPE_Area': 'Shape_Area'
 }
 
 Object.keys(filenames).forEach(layer => {
@@ -37,9 +41,13 @@ Object.keys(filenames).forEach(layer => {
         properties[propertiesMap[prop]] = f.properties[prop]
       }
     })
-    properties.Address = fromSVY21(properties.X_ADDR, properties.Y_ADDR)
+    properties.Address = layer === 'npc' ? [properties.X_ADDR, properties.Y_ADDR]
+      : fromSVY21(properties.X_ADDR, properties.Y_ADDR)
     f.properties = properties
-    f.id = properties.Subzone_Code || properties.Planning_Area_Code || properties.Region_Code
+    f.id = properties.Subzone_Code ||
+           properties.Planning_Area_Code ||
+           properties.Region_Code ||
+           (properties.NPC_Name && shortenNPC(properties.NPC_Name))
 
     if (f.geometry.type === 'Polygon') {
       f.geometry.coordinates = f.geometry.coordinates
@@ -51,3 +59,7 @@ Object.keys(filenames).forEach(layer => {
   })
   fs.writeFileSync(`data/${layer}.json`, JSON.stringify(features))
 })
+
+function shortenNPC (npcName) {
+  return npcName.replace(/Neighbourhood Police Centre$/, 'NPC')
+}

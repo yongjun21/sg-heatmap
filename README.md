@@ -633,7 +633,7 @@ heatmap.inspectUpdaters()
 // prints a stringified version countUpdater and sumUpdater
 ```
 
-The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in two arguments *state* & *payload* (optional) and returns a numeric statistic *value*. Only *stat* that has been registered are available to be called by the *.getStat( )* method.
+The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in two arguments *state* & *payload* (optional) and returns a numeric statistic *value*. When the *stat* function is called, the *payload* argument is provided by the second argument in *.getstat( )*. Only *stat* that has been registered are available to be called by the *.getStat( )* method. 
 
 ```javascript
 // eg.

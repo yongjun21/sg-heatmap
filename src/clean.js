@@ -2,12 +2,12 @@ import {encodePolyline, fromSVY21} from './helpers/geometry'
 import fs from 'fs'
 
 const filenames = {
-  region_2014: 'mp14-region-no-sea-pl',
-  planning_area_2014: 'mp14-plng-area-no-sea-pl',
-  subzone_2014: 'mp14-subzone-no-sea-pl',
-  region_2008: 'mp08-region-no-sea-pl',
-  planning_area_2008: 'mp08-plng-area-no-sea-pl',
-  subzone_2008: 'mp08-subzone-no-sea-pl'
+  region_np14: 'mp14-region-no-sea-pl',
+  planning_area_mp14: 'mp14-plng-area-no-sea-pl',
+  subzone_mp14: 'mp14-subzone-no-sea-pl',
+  region_mp08: 'mp08-region-no-sea-pl',
+  planning_area_mp08: 'mp08-plng-area-no-sea-pl',
+  subzone_mp08: 'mp08-subzone-no-sea-pl'
 }
 
 const propertiesMap = {

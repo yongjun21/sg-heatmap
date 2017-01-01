@@ -1,8 +1,8 @@
 import SgHeatmap from '../index'
-import subzone from '../../data/subzone_2014.json'
+import region from '../../data/region_mp14.json'
 
 export default class extends SgHeatmap {
   constructor () {
-    super(subzone)
+    super(region)
   }
 }

@@ -49,3 +49,26 @@ export function toLinearRing (polyline) {
   }
   return linearRing
 }
+
+export function haversineDist (lat0, lng0, lat1, lng1, radius = 6371009) {
+  [lat0, lng0, lat1, lng1] = [lat0, lng0, lat1, lng1].map(toRadian)
+  const RHS = (1 - Math.cos(lat1 - lat0)) / 2 + Math.cos(lat0) * Math.cos(lat1) * (1 - Math.cos(lng1 - lng0)) / 2
+  return 2 * radius * Math.asin(Math.sqrt(RHS))
+}
+
+export function getDestination (lat0, lng0, bearing, distance, radius = 6371009) {
+  [lat0, lng0, bearing] = [lat0, lng0, bearing].map(toRadian)
+  const angularDist = distance / radius
+  let lat1 = Math.asin(Math.sin(lat0) * Math.cos(angularDist) + Math.cos(lat0) * Math.sin(angularDist) * Math.cos(bearing))
+  let lng1 = lng0 + Math.atan2(Math.sin(bearing) * Math.sin(angularDist) * Math.cos(lat0), Math.cos(angularDist) - Math.sin(lat0) * Math.sin(lat1))
+  lng1 = (lng1 + Math.PI) % (2 * Math.PI) - Math.PI
+  return [lat1, lng1].map(fromRadian)
+}
+
+function toRadian (theta) {
+  return theta * Math.PI / 180
+}
+
+function fromRadian (rad) {
+  return rad * 180 / Math.PI
+}

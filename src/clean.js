@@ -9,8 +9,8 @@ const filenames = {
   planning_area_mp08: 'mp08-plng-area-no-sea-pl',
   subzone_mp08: 'mp08-subzone-no-sea-pl',
   region_mp98: 'mp98-region-no-sea-pl',
-  planning_area_mp98: 'mp98-plng-area-no-sea-pl',
-  subzone_mp98: 'mp98-subzone-no-sea-pl',
+  // planning_area_mp98: 'mp98-plng-area-no-sea-pl',
+  // subzone_mp98: 'mp98-subzone-no-sea-pl',
   npc: 'npc-boundary'
 }
 

@@ -1,4 +1,4 @@
-import polyline from 'polyline'
+import polyline from '@mapbox/polyline'
 import proj4 from 'proj4'
 import cloneDeep from 'lodash/cloneDeep'
 

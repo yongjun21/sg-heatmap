@@ -1,12 +1,12 @@
 {
   "name": "sg-heatmap",
-  "version": "2.4.3",
+  "version": "2.4.6",
   "description": "Open-source all-in-one Swiss Army knife tool for creating Choropleth maps",
   "main": "dist/index.js",
   "scripts": {
     "build": "rm -rf dist && mkdir dist && babel src --out-dir dist",
     "extract": "babel-node src/extract.js",
-    "prepublish": "npm run build && npm run test",
+    "prepublish": "npm run test && npm run build",
     "test": "standard"
   },
   "repository": {
@@ -31,9 +31,9 @@
   },
   "homepage": "https://github.com/yongjun21/sg-heatmap#readme",
   "dependencies": {
+    "@mapbox/polyline": "^0.2.0",
     "chroma-js": "^1.2.1",
     "lodash": "^4.15.0",
-    "polyline": "^0.2.0",
     "proj4": "^2.3.15"
   },
   "devDependencies": {

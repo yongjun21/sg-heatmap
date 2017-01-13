@@ -29,9 +29,8 @@ export default function supportLeaflet (heatmap) {
 
     const statValues = this.getStat(stat).values
     this.renderer.eachLayer(layer => {
-      const value = statValues[layer.feature.id] || null
-      const color = colorScale(value)
-      layer.feature.properties.color = color
+      const value = statValues[layer.feature.id]
+      layer.feature.properties.color = value ? colorScale(value) : null
       this.renderer.resetStyle(layer)
     })
   }

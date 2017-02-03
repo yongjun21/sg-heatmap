@@ -150,6 +150,7 @@ export class Feature {
   constructor (data) {
     if (!('id' in data)) throw new Error('Feature object requires id')
     if (!('geometry' in data)) throw new Error('Geometry not specified in feature object')
+    this.type = 'Feature'
     this.id = data.id
     this.properties = data.properties ? cloneDeep(data.properties) : {}
 

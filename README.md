@@ -264,6 +264,8 @@ import SgHeatmap from 'sg-heatmap/dist/predefined/SPF_npc'
 var heatmap = new SgHeatmap()
 ```
 
+**Impt:** If using predefined maps browser-side, include json-loader in your webpack config
+
 Data source:
 - https://data.gov.sg/dataset/master-plan-2014-region-boundary-web
 - https://data.gov.sg/dataset/master-plan-2014-planning-area-boundary-web
@@ -636,7 +638,7 @@ heatmap.inspectUpdaters()
 // prints a stringified version countUpdater and sumUpdater
 ```
 
-The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in two arguments *state* & *payload* (optional) and returns a numeric statistic *value*. When the *stat* function is called, the *payload* argument is provided by the second argument in *.getstat( )*. Only *stat* that has been registered are available to be called by the *.getStat( )* method. 
+The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in two arguments *state* & *payload* (optional) and returns a numeric statistic *value*. When the *stat* function is called, the *payload* argument is provided by the second argument in *.getstat( )*. Only *stat* that has been registered are available to be called by the *.getStat( )* method.
 
 ```javascript
 // eg.

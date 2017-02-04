@@ -1,4 +1,6 @@
 import sortBy from 'lodash/sortBy'
+import SgHeatmap from '../index'
+import hextile from 'hextile'
 
 // UPDATERS
 
@@ -187,4 +189,10 @@ export function insideByKey (heatmap) {
   heatmap.bin = function (keys) {
     return heatmap.children.filter(c => inside.call(c, keys))
   }
+}
+
+// TILED map transformation
+export function tiledMap (heatmap, options) {
+  const tiles = hextile(heatmap.children, options)
+  heatmap.children = new SgHeatmap(tiles).children
 }

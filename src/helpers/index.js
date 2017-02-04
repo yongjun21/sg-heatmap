@@ -82,14 +82,6 @@ export function stat_MEDIAN (state) {
   else return (sorted[midpoint - 1] + sorted[midpoint]) / 2
 }
 
-export function stat_PERCENTILE (state, payload) {
-  if (payload <= 0 || payload > 1) return null
-  if (state._history.length < 1) return null
-  const sorted = sortBy(state._history)
-  const index = Math.ceil(state._history.length * payload)
-  return sorted[index - 1]
-}
-
 // REGISTER functions
 
 export function register_HISTORY (heatmap) {
@@ -172,12 +164,6 @@ export function register_MEDIAN (heatmap) {
     .registerStat('median', stat_MEDIAN)
 }
 
-export function register_PERCENTILEd (heatmap) {
-  return heatmap
-    .setDefaultState('_history', [])
-    .registerUpdater(updater_HISTORY)
-    .registerStat('percentile', stat_PERCENTILE)
-}
 /* eslint-enable camelcase */
 
 // INSIDE overrides

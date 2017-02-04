@@ -436,9 +436,6 @@ heatmap.getStat('max') // return MAX
 heatmap.getStat('min') // return MIN
 ```
 
-*.getStat( )* optionally accepts a second payload argument
-
-
 ```javascript
 // eg.
 import {register_PERCENTILE} from 'sg-heatmap/dist/helpers'
@@ -454,7 +451,7 @@ heatmap.getStat('percentile', 0.75) // return the 75th percentile
 heatmap.initializeRenderer(defaultStyle, addonStyle)
 
 // initialize colorScale by providing domain min/max endpoints
-heatmap.render(key, colorScale, payload) // key is the name of the statistic to render
+heatmap.render(key, colorScale) // key is the name of the statistic to render
 ```
 
 - *defaultStyle* and *addonStyle* are optional style options to be applied onto map polygons
@@ -463,7 +460,6 @@ heatmap.render(key, colorScale, payload) // key is the name of the statistic to 
 - *addonStyle* applies to those polygons that has been assigned at least one data point
 - do not set 'fillColor' in *addonStyle* as it will be overridden by the fillColor *colorScale* specify
 - refer to next section for detail on the *colorScale* object
-- if *stat* to be rendered requires a payload argument, it should be supplied as the third argument in *.render( )*
 
 #### *colorScale* function
 - *.render( )* method requires a colorScale function to be passed in as its second parameter.
@@ -638,11 +634,11 @@ heatmap.inspectUpdaters()
 // prints a stringified version countUpdater and sumUpdater
 ```
 
-The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in two arguments *state* & *payload* (optional) and returns a numeric statistic *value*. When the *stat* function is called, the *payload* argument is provided by the second argument in *.getstat( )*. Only *stat* that has been registered are available to be called by the *.getStat( )* method.
+The final step is to register a compute statistic function by calling *.registerStat( )*. *stat* functions takes in a child's *state* and output a numeric statistic *value*. Only *stat* that has been registered are available to be called by the *.getStat( )* method.
 
 ```javascript
 // eg.
-function computeMean (state, payload) {
+function computeMean (state) {
   return state._sum / state._count
 }
 heatmap.registerStat('mean', computeMean)

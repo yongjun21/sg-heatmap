@@ -177,8 +177,26 @@ export function insideByKey (heatmap) {
   }
 }
 
-// TILED map transformation
+// TILED MAP transformation
 export function tiledMap (heatmap, options) {
   const tiles = hextile(heatmap.children, options)
   heatmap.children = new SgHeatmap(tiles).children
+}
+
+// For each child, find the list of ADJACENT FEATURES and write them to `properties.neighbours`
+export function findNeighbours (heatmap) {
+  const points = {}
+  heatmap.children.forEach(c => {
+    const linearRings = c.geometry.type === 'MultiPolygon'
+      ? [].concat(...c.geometry.coordinates) : c.geometry.coordinates
+    points[c.id] = [].concat(...linearRings)
+  })
+
+  heatmap.children.forEach(c => {
+    c.properties.adjacentTo = heatmap.children.filter(neighbour => {
+      if (c.id === neighbour.id) return false
+      return points[neighbour.id].some(point =>
+        points[c.id].findIndex(pt => point[0] === pt[0] && point[1] === pt[1]) > -1)
+    }).map(c => c.id)
+  })
 }

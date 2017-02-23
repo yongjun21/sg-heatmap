@@ -1,6 +1,7 @@
 import sortBy from 'lodash/sortBy'
 import SgHeatmap from '../index'
 import hextile from 'hextile'
+import {disjointBbox} from './geometry'
 
 // UPDATERS
 
@@ -193,10 +194,16 @@ export function findNeighbours (heatmap) {
   })
 
   heatmap.children.forEach(c => {
-    c.properties.adjacentTo = heatmap.children.filter(neighbour => {
+    c.properties.neighboura = heatmap.children.filter(neighbour => {
       if (c.id === neighbour.id) return false
-      return points[neighbour.id].some(point =>
-        points[c.id].findIndex(pt => point[0] === pt[0] && point[1] === pt[1]) > -1)
+      if (disjointBbox(c.geometry.bbox, neighbour.geometry.bbox)) return false
+      return points[neighbour.id].some(point => {
+        if (point[0] < c.geometry.bbox[0]) return false
+        if (point[1] < c.geometry.bbox[1]) return false
+        if (point[0] > c.geometry.bbox[2]) return false
+        if (point[1] > c.geometry.bbox[3]) return false
+        return points[c.id].findIndex(pt => point[0] === pt[0] && point[1] === pt[1]) > -1
+      })
     }).map(c => c.id)
   })
 }

@@ -1,6 +1,6 @@
 {
   "name": "sg-heatmap",
-  "version": "2.5.2",
+  "version": "2.5.8",
   "description": "Open-source all-in-one Swiss Army knife tool for creating Choropleth maps",
   "main": "dist/index.js",
   "scripts": {
@@ -33,7 +33,7 @@
   "dependencies": {
     "@mapbox/polyline": "^0.2.0",
     "chroma-js": "^1.2.1",
-    "hextile": "^1.0.5",
+    "hextile": "^1.0.6",
     "lodash": "^4.15.0",
     "proj4": "^2.3.15"
   },

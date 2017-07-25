@@ -340,7 +340,6 @@ register_MEAN(heatmap)
 - register_MIN
 - register_MAX
 - register_MEDIAN
-- register_PERCENTILE
 
 *register_HISTORY* and *register_LATEST* does not do any actual aggregating
 
@@ -434,15 +433,6 @@ dataPoints.forEach(pt => {
 heatmap.getStat('mean') // return MEAN
 heatmap.getStat('max') // return MAX
 heatmap.getStat('min') // return MIN
-```
-
-```javascript
-// eg.
-import {register_PERCENTILE} from 'sg-heatmap/dist/helpers'
-
-register_PERCENTILE(heatmap)
-// pass in data
-heatmap.getStat('percentile', 0.75) // return the 75th percentile
 ```
 
 #### *.render( )* method
@@ -705,7 +695,42 @@ function computeMean (state) {
   return sum / count
 }
 
-registerStat('movingAverage', computeMean)
+heatmap.registerStat('movingAverage', computeMean)
+```
+
+#### Dynamic *stat*
+There are times when it may not be feasible to pre-register all the *stat* we need upfront. For example:
+
+```javascript
+import {register_MEAN} from 'sg-heatmap/dist/helpers'
+
+register_MEDIAN(heatmap)
+
+heatmap.getStat('median') // returns 50th percentile
+
+// what if we need the 25th & 75th percentile also?
+// maybe we can register multiple similar 'stat'
+heatmap.registerStat('percentile25', compute25percentile)
+heatmap.registerStat('percentile75', compute75percentile)
+
+heatmap.getStat('percentile25')
+heatmap.getStat('percentile75')
+```
+
+What if we are using a slider? (10th, 20th, 30th, ... , 90th percentile). Are we going to write one new *stat* for each percentile? In this case we need a more flexible way of defining your 'stat'. How about a *stat* function that accepts a payload?
+
+To provide for such situation, we allow our *.getstat( )* and *.render( )* method to accept a function instead of a key string. What this mean is you can supplied a *stat* function directly rather than calling a pre-registered *stat* function.
+
+```javascript
+// you can write a higher order function (i.e. a function generator) that returns a computePercentile function for any percentile value
+function computePercentile (n) {
+  return function (state) {
+    // return Nth percentile of values in state._history
+  }
+}
+
+heatmap.getStat(computePercentile(25)) // compute 25th percentile
+heatmap.render(computePercentile(75), colorScale) // render choropleth map of 75th percentile
 ```
 
 #### Cloning *SgHeatmap* object
@@ -721,7 +746,7 @@ var newHeatmap = oldHeatmap.clone(true)
 
 // Method 2 (for sending data between server and client)
 var serializedData = oldHeatmap.serialize(true)
-var newHeatmap = new SgHeatmap(JSON.stringify(serializedData))
+var newHeatmap = new SgHeatmap(JSON.parse(serializedData))
 // as before, setting option false will clone only polygon data
 ```
 

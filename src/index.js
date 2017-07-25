@@ -69,11 +69,12 @@ export default class SgHeatmap {
   }
 
   getStat (stat) {
+    const fn = typeof stat === 'function' ? stat : this._stats[stat]
     const [changed, unchanged] = partition(this.children,
       c => !isEqual(this._defaultState, c.state))
     const listedValues = []
     const values = changed.reduce((stats, c) => {
-      const value = this._stats[stat](c.state, c.properties)
+      const value = fn(c.state, c.properties)
       listedValues.push(value)
       return Object.assign(stats, {[c.id]: value})
     }, {})

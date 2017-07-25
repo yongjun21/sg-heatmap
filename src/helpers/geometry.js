@@ -35,8 +35,12 @@ export function decodePolyline (str) {
   ]))
 }
 
-export function fromSVY21 (x, y) {
-  return SVY21proj.inverse([x, y])
+export function fromSVY21 (xy) {
+  return SVY21proj.inverse(xy)
+}
+
+export function toSVY21 (lnglat) {
+  return SVY21proj.forward(lnglat)
 }
 
 export function toLinearRing (polyline) {

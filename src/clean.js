@@ -45,7 +45,7 @@ Object.keys(filenames).forEach(layer => {
       }
     })
     properties.Address = layer === 'npc' ? [properties.X_ADDR, properties.Y_ADDR]
-      : fromSVY21(properties.X_ADDR, properties.Y_ADDR)
+      : fromSVY21([properties.X_ADDR, properties.Y_ADDR])
     f.properties = properties
     f.id = properties.Subzone_Code ||
            properties.Planning_Area_Code ||

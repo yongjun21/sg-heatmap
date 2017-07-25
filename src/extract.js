@@ -37,7 +37,7 @@ Object.keys(kmls).forEach(layer => {
           tb[key] = value
           return tb
         }, {})
-      const center = fromSVY21(meta.X_ADDR, meta.Y_ADDR)
+      const center = fromSVY21([meta.X_ADDR, meta.Y_ADDR])
       const polygons = area.MultiGeometry.Polygon
       const boundary = polygons instanceof Array
         ? polygons.map(formatPolygon) : [formatPolygon(polygons)]

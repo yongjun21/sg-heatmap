@@ -194,7 +194,7 @@ export function findNeighbours (heatmap) {
   })
 
   heatmap.children.forEach(c => {
-    c.properties.neighboura = heatmap.children.filter(neighbour => {
+    c.properties.neighbours = heatmap.children.filter(neighbour => {
       if (c.id === neighbour.id) return false
       if (disjointBbox(c.geometry.bbox, neighbour.geometry.bbox)) return false
       return points[neighbour.id].some(point => {

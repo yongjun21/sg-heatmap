@@ -14,7 +14,7 @@ export function inside ([lng, lat], polyline) {
     const deltaY_plus = polyline[i][1] - lat
     const deltaY_minus = lat - polyline[i - 1][1]
     if (deltaY_plus > 0 && deltaY_minus <= 0) continue
-    if (deltaY_plus <= 0 && deltaY_minus > 0) continue
+    if (deltaY_plus < 0 && deltaY_minus >= 0) continue
     const deltaX = (deltaY_plus * polyline[i - 1][0] + deltaY_minus * polyline[i][0]) /
       (deltaY_plus + deltaY_minus) - lng
     if (deltaX <= 0) continue

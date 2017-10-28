@@ -1,11 +1,13 @@
 export default function supportLeaflet (heatmap) {
-  function initializeRenderer (defaultStyle = {}, addonStyle = {}) {
+  function initializeRenderer (colorScale, defaultStyle = {}, addonStyle = {}) {
     if (!window) throw new Error('Method initializeRenderer should only be called browser-side')
     if (!window.L) throw new Error('Leaflet not loaded')
     if ('renderer' in this) {
       console.log('Existing renderer replaced')
       this.renderer.remove()
     }
+
+    this.colorScale = colorScale
 
     this.renderer = window.L.geoJSON(null, {
       style: feature => {
@@ -24,13 +26,22 @@ export default function supportLeaflet (heatmap) {
     return this.renderer
   }
 
-  function render (stat, colorScale) {
+  function render (stat, domain) {
     if (!this.renderer) throw new Error('Renderer has not been initialized')
 
-    const statValues = this.getStat(stat).values
+    const {values: statValues, min, max} = this.getStat(stat)
+    domain = domain || [min, max]
+    function normalize (value) {
+      return (value - domain[0]) / (domain[1] - domain[0])
+    }
+
     this.renderer.eachLayer(layer => {
-      const value = statValues[layer.feature.id]
-      layer.feature.properties.color = value ? colorScale(value) : null
+      const key = layer.feature.id
+      if (key in statValues) {
+        layer.feature.properties.color = this.colorScale(normalize(statValues[key]))
+      } else {
+        layer.feature.properties.color = null
+      }
       this.renderer.resetStyle(layer)
     })
   }

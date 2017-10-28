@@ -87,13 +87,15 @@ export default class SgHeatmap {
     }
   }
 
-  initializeRenderer (defaultStyle = {}, addonStyle = {}) {
+  initializeRenderer (colorScale, defaultStyle = {}, addonStyle = {}) {
     if (!window) throw new Error('Method initializeRenderer should only be called browser-side')
     if (!window.google) throw new Error('Google Maps not loaded')
     if ('renderer' in this) {
       console.log('Existing renderer replaced')
       this.renderer.setMap(null)
     }
+
+    this.colorScale = colorScale
 
     this.renderer = new window.google.maps.Data({
       style: feature => {
@@ -115,12 +117,18 @@ export default class SgHeatmap {
     return this.renderer
   }
 
-  render (stat, colorScale) {
+  render (stat, domain) {
     if (!this.renderer) throw new Error('Renderer has not been initialized')
 
-    const {values: statValues, unchanged} = this.getStat(stat)
+    const {values: statValues, unchanged, min, max} = this.getStat(stat)
+
+    domain = domain || [min, max]
+    function normalize (value) {
+      return (value - domain[0]) / (domain[1] - domain[0])
+    }
+
     Object.keys(statValues).forEach(key => {
-      const color = colorScale(statValues[key])
+      const color = this.colorScale(normalize(statValues[key]))
       this.renderer.getFeatureById(key).setProperty('color', color)
     })
     unchanged.forEach(key => {

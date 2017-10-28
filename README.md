@@ -52,6 +52,7 @@ Clearly generating a Choropleth is not an easy task. Our goal is to provide a si
     - [.getStat( ) method](#getstat--method)
     - [.render( ) method](#render--method)
     - [colorScale function](#colorscale-function)
+    - [Normalization of values](#normalization--of--values)
     - [Using predefined colorScale](#using-predefined-colorscale)
     - [List of predefined colorScale](#list-of-predefined-colorscale)
     - [Using colorScale helper function to generate customized colorScale](#using-colorscale-helper-function-to-generate-customized-colorscale)
@@ -80,15 +81,11 @@ dataPoints.forEach(pt => {
   heatmap.update([pt.lng, pt.lat], pt.wt)
 })
 
-// retrieve aggregated values
-var stat = heatmap.getStat('mean')
-
 // initialize color scale
-// supply domain min and max endpoints for linear mapping
-var colorScale = Spectral([stat.min, stat.max])
+var colorScale = Spectral()
 
 // initialize renderer
-var renderer = heatmap.initializeRenderer({
+var renderer = heatmap.initializeRenderer(colorScale, {
   strokeWeight: 1,
   strokeColor: 'black',
   strokeOpacity: 1,
@@ -98,7 +95,7 @@ var renderer = heatmap.initializeRenderer({
 renderer.setMap(googleMap)
 
 // render
-heatmap.render('mean', colorScale)
+heatmap.render('mean')
 ```
 
 ## Binning by key / Working with pre-aggregated data
@@ -151,11 +148,11 @@ Object.keys(stat.values).forEach(key => {
   heatmap.update([key], stat.values[key])
 })
 
-// initialize renderer
-// initialize colorScale...
+// initialize colorScale
+// initialize renderer...
 
 // call render on stat 'latest'
-heatmap.render('latest', colorScale)
+heatmap.render('latest')
 ```
 
 ## NEW Plugin to support LeafletJS
@@ -175,13 +172,12 @@ dataPoints.forEach(pt => {
   heatmap.update([pt.lng, pt.lat], pt.wt)
 })
 
-var stat = heatmap.getStat('mean')
-var colorScale = Spectral([stat.min, stat.max])
+var colorScale = Spectral()
 
 // .initializeRenderer( ) has been overridden to
 // return a Leaflet GeoJSON layer
 // refer to http://leafletjs.com/reference-1.0.0.html#geojson
-var renderer = heatmap.initializeRenderer({
+var renderer = heatmap.initializeRenderer(colorScale, {
   weight: 1,
   color: 'black',
   opacity: 1,
@@ -192,7 +188,7 @@ renderer
   .bindTooltip(layer => layer.feature.properties.Subzone_Name)
   .addTo(leafletMap)
 
-heatmap.render('mean', colorScale)
+heatmap.render('mean')
 ```
 
 ## NEW Plugin to support OpenLayers
@@ -212,8 +208,7 @@ dataPoints.forEach(pt => {
   heatmap.update([pt.lng, pt.lat], pt.wt)
 })
 
-var stat = heatmap.getStat('mean')
-var colorScale = Spectral([stat.min, stat.max])
+var colorScale = Spectral()
 
 // defaultStyle and addonStyle need to be OpenLayers ol.style.Style object
 var defaultStyle = new ol.style.Style({
@@ -229,11 +224,11 @@ var defaultStyle = new ol.style.Style({
 // .initializeRenderer( ) has been overridden to
 // return an OpenLayers ol.layer.Vector object
 // refer to http://openlayers.org/en/latest/apidoc/ol.layer.Vector.html
-var renderer = heatmap.initializeRenderer(defaultStyle)
+var renderer = heatmap.initializeRenderer(colorScale, defaultStyle)
 renderer.setOpacity(0.7)
 openLayersMap.addLayer(renderer)
 
-heatmap.render('mean', colorScale)
+heatmap.render('mean')
 ```
 
 ## API Documentation
@@ -438,39 +433,48 @@ heatmap.getStat('min') // return MIN
 #### *.render( )* method
 ```javascript
 // initialize renderer
-heatmap.initializeRenderer(defaultStyle, addonStyle)
+heatmap.initializeRenderer(colorScale, defaultStyle, addonStyle)
 
 // initialize colorScale by providing domain min/max endpoints
-heatmap.render(key, colorScale) // key is the name of the statistic to render
+heatmap.render(key, domain) // key is the name of the statistic to render
 ```
 
+- *.initializeRenderer( )* method requires a *colorScale* function to be passed in as its first parameter (see below)
 - *defaultStyle* and *addonStyle* are optional style options to be applied onto map polygons
 - refer to [https://developers.google.com/maps/documentation/javascript/3.exp/reference#Data.StyleOptions](https://developers.google.com/maps/documentation/javascript/3.exp/reference#Data.StyleOptions)
 - *defaultStyle* applies to every polygon (including those in the unchanged group)
 - *addonStyle* applies to those polygons that has been assigned at least one data point
 - do not set 'fillColor' in *addonStyle* as it will be overridden by the fillColor *colorScale* specify
-- refer to next section for detail on the *colorScale* object
 
 #### *colorScale* function
-- *.render( )* method requires a colorScale function to be passed in as its second parameter.
-- *colorScale* is any function that maps numeric values to CSS colors
+Any function that maps numeric values between 0 and 1 to CSS colors
 
 ```javascript
 // example
-colorScale(5) // returns 'orange'
-colorScale(10) // returns '#ff0000'
+colorScale(0.5) // returns 'orange'
+colorScale(1) // returns '#ff0000'
+```
+
+#### Normalization of values
+Since *colorScale* accepts input value only between 0 and 1 while *stat.values* can be any numeric value. Values in *stat.values* are first normalized before passing into colorScale. By default, we perform a linear interpolation with domain end points set to the min and max values
+
+```javascript
+function normalize (value) {
+  return (value - stat.min) / (stat.max - stat.min)
+}
+```
+
+You may set your own domain by providing it as a second argument in *render( )*. Eg.
+
+```javascript
+heatmap.render('mean', [100, 1000])
 ```
 
 #### Using predefined colorScale
 ```javascript
 import {Spectral} from 'sg-heatmap/dist/helpers/color'
 
-// hard coded domain
-var colorScale = Spectral([5, 10])
-
-// OR let data decides domain
-var stat = getStat('mean')
-var colorScale = Spectral([stat.min, stat.max])
+var colorScale = Spectral()
 ```
 
 Sometimes linear mapping of value to color
@@ -478,14 +482,14 @@ may not visibly separate the different values sufficiently
 (eg. majority of values are clustered in the lower range)
 In this case, we may want to apply a power transformation
 to accentuate difference within certain part of the domain
-All predefined colorScale accepts a second parameter for specifying power transformation
+All predefined colorScale accepts a parameter for specifying power transformation
 
 ```javascript
 // to accentuate difference in the lower range, set transformation < 1
-var colorScale = Spectral([stat.min, stat.max], 0.5)
+var colorScale = Spectral(0.5)
 
 // to accentuate difference in the upper range, set transformation > 1
-var colorScale = Spectral([stat.min, stat.max], 2)
+var colorScale = Spectral(2)
 ```
 
 #### List of predefined colorScale
@@ -499,14 +503,13 @@ import generateColorScale from 'sg-heatmap/dist/helpers/color'
 var colorArray = ['white', 'yellow', 'orange', 'red', 'black']
 
 var colorScaleOptions = {
-  domain: [0, 1],
   transform: 1,
   bezierInterpolate: false,
   correctLightness: true,
   interpolationMode: 'lab'
 }
 
-var customColorScale = generateColorScale(colorArray, colorScaleOptions)
+var customColorScale = getColorScale(colorArray, colorScaleOptions)
 ```
 
 Refer to [chroma.js](https://gka.github.io/chroma.js/) docs for detail explanation of the different colorScaleOptions

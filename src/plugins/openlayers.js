@@ -1,7 +1,9 @@
 export default function supportOpenLayers (heatmap) {
-  function initializeRenderer (defaultStyle = new window.ol.style.Style(), addonStyle) {
+  function initializeRenderer (colorScale, defaultStyle = new window.ol.style.Style(), addonStyle) {
     if (!window) throw new Error('Method initializeRenderer should only be called browser-side')
     if (!window.ol) throw new Error('OpenLayers not loaded')
+
+    this.colorScale = colorScale
 
     const featureCollection = {
       type: 'FeatureCollection',
@@ -46,12 +48,18 @@ export default function supportOpenLayers (heatmap) {
     return this.renderer
   }
 
-  function render (stat, colorScale) {
+  function render (stat, domain) {
     if (!this.renderer) throw new Error('Renderer has not been initialized')
 
-    const {values: statValues, unchanged} = this.getStat(stat)
+    const {values: statValues, unchanged, min, max} = this.getStat(stat)
+
+    domain = domain || [min, max]
+    function normalize (value) {
+      return (value - domain[0]) / (domain[1] - domain[0])
+    }
+
     Object.keys(statValues).forEach(key => {
-      const color = colorScale(statValues[key])
+      const color = this.colorScale(normalize(statValues[key]))
       this.renderer.getSource().getFeatureById(key).set('color', color)
     })
     unchanged.forEach(key => {

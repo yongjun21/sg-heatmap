@@ -1,11 +1,10 @@
 import polyline from '@mapbox/polyline'
-import proj4 from 'proj4'
 import cloneDeep from 'lodash/cloneDeep'
+import SVY21 from './svy21'
 
 const PRECISION = 7
 
-const SVY21 = '+proj=tmerc +lat_0=1.366666666666667 +lon_0=103.8333333333333 +k=1 +x_0=28001.642 +y_0=38744.572 +ellps=WGS84 +units=m +no_defs'
-const SVY21proj = proj4('WGS84', SVY21)
+const svy21 = new SVY21()
 
 /* eslint-disable camelcase */
 export function inside ([lng, lat], polyline) {
@@ -35,12 +34,14 @@ export function decodePolyline (str) {
   ]))
 }
 
-export function fromSVY21 (xy) {
-  return SVY21proj.inverse(xy)
+export function fromSVY21 ([X, Y]) {
+  const {lat, lon} = svy21.computeLatLon(Y, X)
+  return [lon, lat]
 }
 
-export function toSVY21 (lnglat) {
-  return SVY21proj.forward(lnglat)
+export function toSVY21 ([lon, lat]) {
+  const {N: Y, E: X} = svy21.computeSVY21(lat, lon)
+  return [X, Y]
 }
 
 export function toLinearRing (polyline) {

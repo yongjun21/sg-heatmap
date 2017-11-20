@@ -52,10 +52,10 @@ Clearly generating a Choropleth is not an easy task. Our goal is to provide a si
     - [.getStat( ) method](#getstat--method)
     - [.render( ) method](#render--method)
     - [colorScale function](#colorscale-function)
-    - [Normalization of values](#normalization--of--values)
     - [Using predefined colorScale](#using-predefined-colorscale)
     - [List of predefined colorScale](#list-of-predefined-colorscale)
     - [Using colorScale helper function to generate customized colorScale](#using-colorscale-helper-function-to-generate-customized-colorscale)
+    - [Normalization and remapping of values](#normalization--and--remapping--of--values)
 7. [Advance Topics](#advance-topics)
     - [Adding Event Handlers](#adding-event-handlers)
     - [Custom aggregate functions](#custom-aggregate-functions)
@@ -455,41 +455,11 @@ colorScale(0.5) // returns 'orange'
 colorScale(1) // returns '#ff0000'
 ```
 
-#### Normalization of values
-Since *colorScale* accepts input value only between 0 and 1 while *stat.values* can be any numeric value. Values in *stat.values* are first normalized before passing into colorScale. By default, we perform a linear interpolation with domain end points set to the min and max values
-
-```javascript
-function normalize (value) {
-  return (value - stat.min) / (stat.max - stat.min)
-}
-```
-
-You may set your own domain by providing it as a second argument in *render( )*. Eg.
-
-```javascript
-heatmap.render('mean', [100, 1000])
-```
-
 #### Using predefined colorScale
 ```javascript
 import {Spectral} from 'sg-heatmap/dist/helpers/color'
 
 var colorScale = Spectral()
-```
-
-Sometimes linear mapping of value to color
-may not visibly separate the different values sufficiently
-(eg. majority of values are clustered in the lower range)
-In this case, we may want to apply a power transformation
-to accentuate difference within certain part of the domain
-All predefined colorScale accepts a parameter for specifying power transformation
-
-```javascript
-// to accentuate difference in the lower range, set transformation < 1
-var colorScale = Spectral(0.5)
-
-// to accentuate difference in the upper range, set transformation > 1
-var colorScale = Spectral(2)
 ```
 
 #### List of predefined colorScale
@@ -513,6 +483,37 @@ var customColorScale = getColorScale(colorArray, colorScaleOptions)
 ```
 
 Refer to [chroma.js](https://gka.github.io/chroma.js/) docs for detail explanation of the different colorScaleOptions
+
+#### Normalization and remapping of values
+Since *colorScale* accepts input value only between 0 and 1 while *stat.values* can be any numeric value. Values in *stat.values* are first normalized before passing into colorScale. By default, we perform a linear interpolation with domain end points set to the min and max values
+
+```javascript
+function normalize (value) {
+  return (value - stat.min) / (stat.max - stat.min)
+}
+```
+
+You may set your own domain by providing it through an option argument in *render( )*. Eg.
+
+```javascript
+heatmap.render('mean', {domain: [100, 1000]})
+```
+
+Sometimes linear mapping of value to color
+may not visibly separate the different values sufficiently
+(eg. majority of values are clustered in the lower range)
+In this case, we may want to apply a power transformation
+to accentuate difference within certain part of the domain.
+
+The power transformation to apply can be specified in the same option argument. Eg.
+
+```javascript
+// to accentuate difference in the lower range, set transformation < 1
+heatmap.render('mean', {transform: 0.5})
+
+// to accentuate difference in the upper range, set transformation > 1
+heatmap.render('mean', {transform: 2})
+```
 
 ## Advance Topics
 

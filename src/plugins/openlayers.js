@@ -48,18 +48,20 @@ export default function supportOpenLayers (heatmap) {
     return this.renderer
   }
 
-  function render (stat, domain) {
+  function render (stat, options = {}) {
     if (!this.renderer) throw new Error('Renderer has not been initialized')
 
     const {values: statValues, unchanged, min, max} = this.getStat(stat)
 
-    domain = domain || [min, max]
+    const domain = options.domain || [min, max]
     function normalize (value) {
       return (value - domain[0]) / (domain[1] - domain[0])
     }
 
     Object.keys(statValues).forEach(key => {
-      const color = this.colorScale(normalize(statValues[key]))
+      const normalized = normalize(statValues[key])
+      const transformed = Math.pow(normalized, options.transform || 1)
+      const color = this.colorScale(transformed)
       this.renderer.getSource().getFeatureById(key).set('color', color)
     })
     unchanged.forEach(key => {

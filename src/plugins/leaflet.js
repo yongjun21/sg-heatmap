@@ -26,11 +26,11 @@ export default function supportLeaflet (heatmap) {
     return this.renderer
   }
 
-  function render (stat, domain) {
+  function render (stat, options = {}) {
     if (!this.renderer) throw new Error('Renderer has not been initialized')
 
     const {values: statValues, min, max} = this.getStat(stat)
-    domain = domain || [min, max]
+    const domain = options.domain || [min, max]
     function normalize (value) {
       return (value - domain[0]) / (domain[1] - domain[0])
     }
@@ -38,7 +38,9 @@ export default function supportLeaflet (heatmap) {
     this.renderer.eachLayer(layer => {
       const key = layer.feature.id
       if (key in statValues) {
-        layer.feature.properties.color = this.colorScale(normalize(statValues[key]))
+        const normalized = normalize(statValues[key])
+        const transformed = Math.pow(normalized, options.transform || 1)
+        layer.feature.properties.color = this.colorScale(transformed)
       } else {
         layer.feature.properties.color = null
       }

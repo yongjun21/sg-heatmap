@@ -145,7 +145,7 @@ export default class SgHeatmap {
     cloned._updaters = [...this._updaters]
     cloned._stats = {...this._stats}
     if (includeState) {
-      cloned._defaultState = this.defaultState
+      cloned._defaultState = this._defaultState
     } else {
       cloned.children.forEach(c => {
         c.state = {}

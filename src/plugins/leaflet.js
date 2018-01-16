@@ -20,7 +20,7 @@ export default function supportLeaflet (heatmap) {
       id: c.id,
       type: 'Feature',
       geometry: c.geometry,
-      properties: Object.assign({color: null}, c.properties)
+      properties: Object.assign({}, c.properties, {color: null})
     })))
 
     return this.renderer

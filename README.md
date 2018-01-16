@@ -39,8 +39,9 @@ Clearly generating a Choropleth is not an easy task. Our goal is to provide a si
 1. [A basic example](#a-basic-example)
 2. [Binning by key / Working with pre-aggregated data](#binning-by-key--working-with-pre-aggregated-data)
 3. [NEW Plugin to support LeafletJS](#new-plugin-to-support-leafletjs)
-4. [NEW Plugin to support OpenLayers](#new-plugin-to-support-openlayers)
-5. [API Documentation](#api-documentation)
+4. [NEW Plugin to support MapboxGL](#new-plugin-to-support-mapboxgl)
+5. [NEW Plugin to support OpenLayers](#new-plugin-to-support-openlayers)
+6. [API Documentation](#api-documentation)
     - [Installing](#installing)
     - [Importing to project](#importing-to-project)
     - [Using predefined maps with polygon data loaded](#using-predefined-maps-with-polygon-data-loaded)
@@ -189,6 +190,59 @@ renderer
   .addTo(leafletMap)
 
 heatmap.render('mean')
+```
+
+## NEW Plugin to support MapboxGL
+```javascript
+import SgHeatmap from 'sg-heatmap/dist/predefined/URA_subzone'
+import supportMapboxGL from 'sg-heatmap/dist/plugins/mapboxgl'
+import {register_MEAN} from 'sg-heatmap/dist/helpers'
+import {Spectral} from 'sg-heatmap/dist/helpers/color'
+
+import dataPoints from './dataPoints.json'
+
+var heatmap = new SgHeatmap( )
+supportMapboxGL(heatmap)
+register_MEAN(heatmap)
+
+dataPoints.forEach(pt => {
+  heatmap.update([pt.lng, pt.lat], pt.wt)
+})
+
+mapboxglMap.on('load', e => {
+  var colorScale = Spectral()
+
+  // .initializeRenderer( ) requires map to be passed in as the first argument
+  // returns an object with the following properties
+  // layer: layer id of the choropleth layer
+  // source: geojson data source backing the choropleth layer
+  // remove: method to clear the choropleth layer
+  var renderer = heatmap.initializeRenderer(mapboxglMap, colorScale, {
+    'line-width': 1,
+    'line-color': 'black',
+    'line-opacity': 1,
+    'fill-color': 'white',
+    'fill-opacity': 0.7
+  })
+
+  var tooltip = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+  })
+
+  mapboxglMap.on('mousemove', renderer.layer, e => {
+    tooltip
+      .setLngLat(e.lngLat)
+      .setText(e.features[0].properties.Subzone_Name)
+      .addTo(mapboxgMap)
+  })
+
+  mapboxgMap.on('mouseleave', renderer.layer, e => {
+    tooltip.remove()
+  })
+
+  heatmap.render('mean')
+})
 ```
 
 ## NEW Plugin to support OpenLayers

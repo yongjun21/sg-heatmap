@@ -110,7 +110,7 @@ export default class SgHeatmap {
         id: c.id,
         type: 'Feature',
         geometry: c.geometry,
-        properties: Object.assign({color: null}, c.properties)
+        properties: Object.assign({}, c.properties, {color: null})
       })
     })
 

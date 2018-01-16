@@ -11,7 +11,7 @@ export default function supportOpenLayers (heatmap) {
         id: c.id,
         type: 'Feature',
         geometry: c.geometry,
-        properties: Object.assign({color: null}, c.properties)
+        properties: Object.assign({}, c.properties, {color: null})
       }))
     }
     const vectorSource = new window.ol.source.Vector({

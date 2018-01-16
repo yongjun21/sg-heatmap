@@ -1,6 +1,6 @@
 {
   "name": "sg-heatmap",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "description": "Open-source all-in-one Swiss Army knife tool for creating Choropleth maps",
   "main": "dist/index.js",
   "module": "dist/es/index.js",
@@ -20,6 +20,7 @@
     "Singapore",
     "Google Maps",
     "Leaflet",
+    "MapboxGL",
     "OpenLayers",
     "visualization",
     "mapping",

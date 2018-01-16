@@ -29,13 +29,12 @@ export default function supportMapboxGL (heatmap) {
     map.addSource(id, {type: 'geojson', data})
 
     map.addLayer({
-      id: id + '-default',
+      id: id + '-fill-default',
       source: id,
       type: 'fill',
       filter: ['!has', 'color'],
       paint: Object.assign(
-        _pick(defaultStyle, ['fill-color', 'fill-opacity']),
-        {'fill-outline-color': 'transparent'}
+        _pick(defaultStyle, ['fill-color', 'fill-opacity'])
       )
     })
 
@@ -50,14 +49,14 @@ export default function supportMapboxGL (heatmap) {
     })
 
     map.addLayer({
-      id: id,
+      id: id + '-fill',
       source: id,
       type: 'fill',
       filter: ['has', 'color'],
       paint: Object.assign(
         _pick(defaultStyle, ['fill-color', 'fill-opacity']),
         _pick(addonStyle, ['fill-opacity']),
-        {'fill-color': ['get', 'color'], 'fill-outline-color': 'transparent'}
+        {'fill-color': ['get', 'color']}
       )
     })
 
@@ -74,14 +73,14 @@ export default function supportMapboxGL (heatmap) {
 
     this.renderer = {
       layer: id,
+      layers: [id + '-fill-default', id + '-line-default', id + '-fill', id + '-line'],
       get source () {
         return map.getSource(id)
       },
       remove () {
-        map.removeLayer(id + '-default')
-        map.removeLayer(id)
-        map.removeLayer(id + '-line-default')
-        map.removeLayer(id + '-line')
+        this.layers.forEach(layer => {
+          map.removeLayer(layer)
+        })
         map.removeSource(id)
       }
     }

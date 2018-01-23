@@ -79,9 +79,9 @@ export default function supportMapboxGL (heatmap) {
       },
       remove () {
         this.layers.forEach(layer => {
-          map.removeLayer(layer)
+          if (map.getLayer(layer)) map.removeLayer(layer)
         })
-        map.removeSource(id)
+        if (map.getSource(id)) map.removeSource(id)
       }
     }
     return this.renderer
